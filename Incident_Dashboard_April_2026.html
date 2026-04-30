@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incident Report Dashboard — April 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-900: #042C53;
+    --blue-800: #0C447C;
+    --blue-600: #185FA5;
+    --blue-400: #378ADD;
+    --blue-200: #85B7EB;
+    --blue-100: #B5D4F4;
+    --blue-50:  #E6F1FB;
+    --red-900:  #501313;
+    --red-800:  #791F1F;
+    --red-600:  #A32D2D;
+    --red-400:  #E24B4A;
+    --red-200:  #F09595;
+    --red-50:   #FCEBEB;
+    --amber-600:#854F0B;
+    --amber-400:#BA7517;
+    --amber-200:#EF9F27;
+    --amber-50: #FAEEDA;
+    --green-600:#3B6D11;
+    --green-400:#639922;
+    --green-200:#97C459;
+    --green-50: #EAF3DE;
+    --gray-900: #2C2C2A;
+    --gray-700: #444441;
+    --gray-500: #5F5E5A;
+    --gray-300: #B4B2A9;
+    --gray-100: #D3D1C7;
+    --gray-50:  #F1EFE8;
+    --bg:       #F5F4F0;
+    --surface:  #FFFFFF;
+    --radius:   12px;
+    --radius-sm:8px;
+  }
+
+  body {
+    background: var(--bg);
+    font-family: 'IBM Plex Sans Thai', 'IBM Plex Sans', sans-serif;
+    color: var(--gray-900);
+    min-height: 100vh;
+    padding: 28px 32px 48px;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--blue-800);
+    border-radius: var(--radius);
+    padding: 20px 28px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; right: 80px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+  }
+  .header-left .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--blue-200);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .header-left h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .header-left .sub {
+    font-size: 13px;
+    color: var(--blue-200);
+    margin-top: 5px;
+  }
+  .header-right { text-align: right; position: relative; z-index: 1; }
+  .header-right .pill {
+    display: inline-block;
+    background: var(--red-600);
+    color: var(--red-50);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+  }
+  .header-right .reporter {
+    font-size: 12px;
+    color: var(--blue-200);
+    line-height: 1.6;
+  }
+
+  /* ── KPI Grid ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    padding: 16px 14px 14px;
+    text-align: center;
+    border: 1px solid var(--gray-100);
+    transition: transform 0.15s;
+  }
+  .kpi:hover { transform: translateY(-2px); }
+  .kpi .num {
+    font-size: 36px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  .kpi .lbl {
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-top: 5px;
+    line-height: 1.4;
+  }
+  .kpi.total .num { color: var(--blue-600); }
+  .kpi.accident .num { color: var(--red-600); }
+  .kpi.nearmiss .num { color: var(--green-600); }
+  .kpi.high .num { color: var(--red-400); }
+  .kpi.medium .num { color: var(--amber-400); }
+  .kpi.low .num { color: var(--green-400); }
+
+  /* ── Grid Rows ── */
+  .row2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .row2b { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 14px;
+    background: var(--blue-400);
+    border-radius: 2px;
+  }
+
+  /* ── Risk Bars ── */
+  .risk-row { margin-bottom: 12px; }
+  .risk-row .top { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-700); margin-bottom: 4px; }
+  .risk-row .track { height: 8px; background: var(--gray-50); border-radius: 4px; overflow: hidden; }
+  .risk-row .fill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(.4,0,.2,1); }
+
+  /* ── Person Bars ── */
+  .person-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .person-row .name { min-width: 130px; color: var(--gray-700); }
+  .person-row .bar-wrap { flex: 1; height: 10px; background: var(--gray-50); border-radius: 5px; overflow: hidden; }
+  .person-row .bar-fill { height: 100%; border-radius: 5px; }
+  .person-row .cnt { font-weight: 600; min-width: 18px; text-align: right; color: var(--gray-700); }
+
+  /* ── Timeline ── */
+  .tl-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--gray-50);
+    font-size: 13px;
+  }
+  .tl-item:last-child { border-bottom: none; }
+  .tl-date {
+    color: var(--blue-600);
+    font-weight: 600;
+    min-width: 56px;
+    font-size: 12px;
+    padding-top: 1px;
+  }
+  .tl-body { flex: 1; color: var(--gray-700); line-height: 1.5; }
+  .tl-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+  .tl-badge.high { background: var(--red-50); color: var(--red-600); }
+  .tl-badge.mid  { background: var(--amber-50); color: var(--amber-600); }
+  .tl-badge.low  { background: var(--green-50); color: var(--green-600); }
+
+  /* ── Insight List ── */
+  .insight-list { list-style: none; }
+  .insight-list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: var(--gray-700);
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-50);
+    line-height: 1.6;
+  }
+  .insight-list li:last-child { border-bottom: none; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .dot.red    { background: var(--red-400); }
+  .dot.amber  { background: var(--amber-200); }
+  .dot.blue   { background: var(--blue-400); }
+  .dot.green  { background: var(--green-400); }
+
+  /* ── Action Plan ── */
+  .action-group { margin-bottom: 12px; }
+  .action-group .phase {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-500);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin: 2px 3px 2px 0;
+    line-height: 1.6;
+  }
+  .tag.red    { background: var(--red-50);    color: var(--red-600); }
+  .tag.amber  { background: var(--amber-50);  color: var(--amber-600); }
+  .tag.green  { background: var(--green-50);  color: var(--green-600); }
+
+  /* ── Chart wrapper ── */
+  .ch { position: relative; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--gray-300);
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-100);
+  }
+
+  /* Print / PDF friendly */
+  @media print {
+    body { background: #fff; padding: 16px; }
+    .card, .kpi { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="eyebrow">Security Department · Incident Management</div>
+    <h1>Executive Incident Report Dashboard</h1>
+    <div class="sub">เมษายน 2569 (April 2026) &nbsp;·&nbsp; รายงานสรุปอุบัติการณ์ / อุบัติเหตุ</div>
+  </div>
+  <div class="header-right">
+    <div class="pill">ALL ACCIDENTS — 0 Near Miss</div>
+    <div class="reporter">
+      รายงานโดย : ณัฐพล แสงโพธิ์แก้ว<br>
+      หัวหน้างานแผนกรักษาความปลอดภัย
+    </div>
+  </div>
+</div>
+
+<!-- KPI -->
+<div class="kpi-grid">
+  <div class="kpi total"><div class="num">5</div><div class="lbl">Total Incidents<br>(รวมทั้งหมด)</div></div>
+  <div class="kpi accident"><div class="num">5</div><div class="lbl">Accidents<br>(อุบัติเหตุ)</div></div>
+  <div class="kpi nearmiss"><div class="num">0</div><div class="lbl">Near Miss<br>(อุบัติการณ์)</div></div>
+  <div class="kpi high"><div class="num">2</div><div class="lbl">High Risk<br>(ความเสี่ยงสูง)</div></div>
+  <div class="kpi medium"><div class="num">2</div><div class="lbl">Medium Risk<br>(ความเสี่ยงกลาง)</div></div>
+  <div class="kpi low"><div class="num">1</div><div class="lbl">Low Risk<br>(ความเสี่ยงต่ำ)</div></div>
+</div>
+
+<!-- ROW 2: Charts -->
+<div class="row2">
+  <!-- Incident Type Bar Chart -->
+  <div class="card">
+    <div class="card-title">Incident Type Distribution</div>
+    <div class="ch" style="height:230px;">
+      <canvas id="typeChart" role="img" aria-label="Vehicle related: 3 cases, Safety incidents: 2 cases">Vehicle: 3, Safety: 2</canvas>
+    </div>
+  </div>
+
+  <!-- Risk + Person -->
+  <div class="card">
+    <div class="card-title">Risk Level Breakdown</div>
+    <div class="risk-row">
+      <div class="top"><span>Critical (วิกฤต)</span><span style="color:var(--gray-300)">— cases</span></div>
+      <div class="track"><div class="fill" style="width:0%;background:var(--red-600);"></div></div>
+    </div>
+    <div class="risk-row">
+      <div class="top"><span>High (สูง)</span><span style="color:var(--red-600);font-weight:600;">2 cases</span></div>
+      <div class="track"><div class="fill" style="width:40%;background:var(--red-400);"></div></div>
+    </div>
+    <div class="risk-row">
+      <div class="top"><span>Medium (ปานกลาง)</span><span style="color:var(--amber-400);font-weight:600;">2 cases</span></div>
+      <div class="track"><div class="fill" style="width:40%;background:var(--amber-200);"></div></div>
+    </div>
+    <div class="risk-row">
+      <div class="top"><span>Low (ต่ำ)</span><span style="color:var(--green-400);font-weight:600;">1 case</span></div>
+      <div class="track"><div class="fill" style="width:20%;background:var(--green-400);"></div></div>
+    </div>
+
+    <div class="card-title" style="margin-top:18px;">Person Type Involved</div>
+    <div class="person-row">
+      <div class="name">ลูกค้า (Customer)</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:40%;background:var(--blue-200);"></div></div>
+      <div class="cnt">2</div>
+    </div>
+    <div class="person-row">
+      <div class="name">ผู้รับเหมา (Contractor)</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:40%;background:var(--red-200);"></div></div>
+      <div class="cnt">2</div>
+    </div>
+    <div class="person-row">
+      <div class="name">พนักงานโครงการ (Staff)</div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:20%;background:var(--green-200);"></div></div>
+      <div class="cnt">1</div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 3: Timeline / Insights / Action Plan -->
+<div class="row3">
+  <!-- Timeline -->
+  <div class="card">
+    <div class="card-title">Incident Timeline — April 2026</div>
+    <div class="tl-item">
+      <div class="tl-date">9 Apr</div>
+      <div class="tl-body">รถจักรยานยนต์ผู้รับเหมาเสียหลักล้ม ได้รับบาดเจ็บสาหัส <span class="tl-badge high">High</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">9 Apr</div>
+      <div class="tl-body">รถยนต์ชนกับรถจักรยานยนต์ (ลูกค้า) หน้าโครงการ <span class="tl-badge high">High</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">13 Apr</div>
+      <div class="tl-body">รถยนต์เฉี่ยวชนกันขณะถอยเข้าช่อง B1 <span class="tl-badge low">Low</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">23 Apr</div>
+      <div class="tl-body">พนักงานภูมิทัศน์ศีรษะแตกขณะเคลื่อนย้ายของ <span class="tl-badge mid">Medium</span></div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">25 Apr</div>
+      <div class="tl-body">พนักงาน GCM เหยียบเหล็กลวดตาข่ายทะลุรองเท้า <span class="tl-badge mid">Medium</span></div>
+    </div>
+  </div>
+
+  <!-- Key Insights -->
+  <div class="card">
+    <div class="card-title">Key Executive Insights</div>
+    <ul class="insight-list">
+      <li><div class="dot red"></div><div>Vehicle related incidents คิดเป็น 60% (3/5 เคส) — เกิดบริเวณสัญญาณไฟด้านหน้าโครงการทั้งหมด</div></li>
+      <li><div class="dot red"></div><div>40% เป็น High Risk รวมถึง 1 เคสบาดเจ็บสาหัส ต้องได้รับการแก้ไขเร่งด่วน</div></li>
+      <li><div class="dot amber"></div><div>ผู้รับเหมาและลูกค้ามีความเสี่ยงเท่ากัน (2 เคสต่อกลุ่ม) — ต้องบริหารความเสี่ยงบุคคลภายนอก</div></li>
+      <li><div class="dot blue"></div><div>0 Near Miss reports — อาจสะท้อนวัฒนธรรมการรายงานที่ต้องพัฒนา</div></li>
+      <li><div class="dot green"></div><div>ไม่มีเหตุการณ์วิกฤตเดือนนี้ — baseline ดี แต่ต้องป้องกันไม่ให้ escalate</div></li>
+    </ul>
+  </div>
+
+  <!-- Action Plan -->
+  <div class="card">
+    <div class="card-title">Action Plan Recommendations</div>
+    <div class="action-group">
+      <div class="phase">Short-Term (เร่งด่วน)</div>
+      <span class="tag red">ติดป้ายเตือนสัญญาณไฟ</span>
+      <span class="tag red">จัดเจ้าหน้าที่อำนวยการจราจร</span>
+      <span class="tag red">ตรวจสอบ PPE ผู้รับเหมา</span>
+    </div>
+    <div class="action-group">
+      <div class="phase">Mid-Term (1–3 เดือน)</div>
+      <span class="tag amber">อบรม Safety Induction ผู้รับเหมา</span>
+      <span class="tag amber">ติดตั้งป้ายนำทางลานจอดรถ</span>
+      <span class="tag amber">ส่งเสริมการรายงาน Near Miss</span>
+    </div>
+    <div class="action-group">
+      <div class="phase">Long-Term (3–6 เดือน)</div>
+      <span class="tag green">Monthly Dashboard Review</span>
+      <span class="tag green">ติดตั้ง CCTV จุดเสี่ยง</span>
+      <span class="tag green">ปรับปรุง Safety Policy</span>
+    </div>
+  </div>
+</div>
+
+<!-- ROW: Bottom Charts -->
+<div class="row2b">
+  <div class="card">
+    <div class="card-title">Risk Level by Incident Category</div>
+    <div class="ch" style="height:200px;">
+      <canvas id="matrixChart" role="img" aria-label="Vehicle: 2 High, 1 Low. Safety: 2 Medium">Vehicle 2H+1L; Safety 2M</canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Incident Frequency by Date</div>
+    <div class="ch" style="height:200px;">
+      <canvas id="dateChart" role="img" aria-label="9 Apr: 2, 13 Apr: 1, 23 Apr: 1, 25 Apr: 1">Apr 9: 2, Apr 13: 1, Apr 23: 1, Apr 25: 1</canvas>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Incident Report Dashboard · เมษายน 2569 (April 2026) · แผนกรักษาความปลอดภัย · Generated by Claude AI
+</div>
+
+<script>
+const textColor = '#5F5E5A';
+const gridColor = 'rgba(0,0,0,0.06)';
+
+// Type Chart
+new Chart(document.getElementById('typeChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Vehicle related incidents\n(ยานพาหนะ)', 'Safety incidents\n(ความปลอดภัยบุคคล)'],
+    datasets: [{
+      label: 'จำนวนเคส',
+      data: [3, 2],
+      backgroundColor: ['#185FA5', '#639922'],
+      hoverBackgroundColor: ['#0C447C', '#3B6D11'],
+      borderRadius: 8,
+      barThickness: 72
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: c => ` ${c.raw} cases` },
+        backgroundColor: '#042C53',
+        titleColor: '#B5D4F4',
+        bodyColor: '#E6F1FB',
+        padding: 10,
+        cornerRadius: 8
+      }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: textColor, font: { size: 12 }, autoSkip: false }
+      },
+      y: {
+        grid: { color: gridColor },
+        ticks: { color: textColor, stepSize: 1 },
+        min: 0, max: 4
+      }
+    }
+  }
+});
+
+// Matrix Chart
+new Chart(document.getElementById('matrixChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Vehicle related', 'Safety incidents'],
+    datasets: [
+      { label: 'High Risk',   data: [2,0], backgroundColor: '#E24B4A', borderRadius: 6, barThickness: 48 },
+      { label: 'Medium Risk', data: [0,2], backgroundColor: '#EF9F27', borderRadius: 6, barThickness: 48 },
+      { label: 'Low Risk',    data: [1,0], backgroundColor: '#97C459', borderRadius: 6, barThickness: 48 }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 12 }
+      },
+      tooltip: { backgroundColor: '#042C53', titleColor: '#B5D4F4', bodyColor: '#E6F1FB', padding: 10, cornerRadius: 8 }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false }, ticks: { color: textColor, font: { size: 12 } } },
+      y: { stacked: true, grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 }, min: 0 }
+    }
+  }
+});
+
+// Date Chart
+new Chart(document.getElementById('dateChart'), {
+  type: 'bar',
+  data: {
+    labels: ['9 Apr', '13 Apr', '23 Apr', '25 Apr'],
+    datasets: [{
+      label: 'Incidents',
+      data: [2, 1, 1, 1],
+      backgroundColor: ['#E24B4A','#EF9F27','#EF9F27','#EF9F27'],
+      hoverBackgroundColor: ['#A32D2D','#BA7517','#BA7517','#BA7517'],
+      borderRadius: 8,
+      barThickness: 44
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: { label: c => ` ${c.raw} incident(s)` },
+        backgroundColor: '#042C53',
+        titleColor: '#B5D4F4',
+        bodyColor: '#E6F1FB',
+        padding: 10,
+        cornerRadius: 8
+      }
+    },
+    scales: {
+      x: { grid: { display: false }, ticks: { color: textColor, font: { size: 12 }, autoSkip: false } },
+      y: { grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1 }, min: 0, max: 3 }
+    }
+  }
+});
+</script>
+</body>
+</html>
