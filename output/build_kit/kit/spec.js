@@ -38,17 +38,17 @@ const C = K.rectC;
 const shots = [
   // S1: gentle push-in from wide system view to the modal
   { f0: 0,   f1: 60,  a: { u: 10, v: 8, w: 1520 }, b: C(963, 590, 1180), ease: 'io' },
-  // S2: three framings with slow push (ease-out)
-  { f0: 60,  f1: 93,  a: C(1148, 575, 430), b: C(1148, 575, 395), ease: 'out3' },        // 1 customer (TO block)
-  { f0: 93,  f1: 126, a: C(950, 772, 680),  b: C(950, 772, 625), ease: 'out3' },         // 2 item row
-  { f0: 126, f1: 180, a: C(1170, 815, 480), b: C(1170, 815, 420), ease: 'out3' },        // 3 price typing
-  // S3: toolbar wide -> anticipation push -> PUNCH to PDF -> hold -> pan to download bubble
-  { f0: 180, f1: 219, a: C(1190, 335, 650), b: C(1190, 335, 620), ease: 'lin' },
-  { f0: 219, f1: 228, a: C(1190, 335, 620), b: C(1245, 300, 560), ease: 'in3' },         // anticipation (the ~0.3s beat)
-  { f0: 228, f1: 237, a: C(1245, 300, 560), b: C(1262, 296, 390), ease: 'out4' },        // punch zoom at click (B 12.2)
-  { f0: 237, f1: 245, a: C(1262, 296, 390), b: C(1266, 296, 372), ease: 'lin' },         // slow drift
-  { f0: 245, f1: 256, a: C(1266, 296, 372), b: { u: 1360, v: 8, w: 560 }, ease: 'io' },  // pan to the download bubble
-  { f0: 256, f1: 270, a: { u: 1360, v: 8, w: 560 }, b: { u: 1360, v: 8, w: 545 }, ease: 'lin' },
+  // S2: three framings with slow push (ease-out) -- v6: crops kept wide enough that the source is upscaled <= ~1.6x
+  { f0: 60,  f1: 93,  a: C(1040, 560, 860), b: C(1040, 560, 820), ease: 'out3' },        // 1 customer (TO block)
+  { f0: 93,  f1: 126, a: C(960, 700, 860),  b: C(960, 710, 820), ease: 'out3' },         // 2 item row
+  { f0: 126, f1: 180, a: C(1100, 740, 800), b: C(1100, 740, 760), ease: 'out3' },        // 3 price typing
+  // S3: toolbar wide -> anticipation push -> PUNCH to PDF -> hold -> pan to download bubble (crops stay below the URL bar)
+  { f0: 180, f1: 219, a: C(1190, 410, 860), b: C(1190, 410, 840), ease: 'lin' },
+  { f0: 219, f1: 228, a: C(1190, 410, 840), b: C(1235, 370, 780), ease: 'in3' },         // anticipation (the ~0.3s beat)
+  { f0: 228, f1: 237, a: C(1235, 370, 780), b: C(1250, 340, 660), ease: 'out4' },        // punch zoom at click (B 12.2)
+  { f0: 237, f1: 245, a: C(1250, 340, 660), b: C(1252, 340, 650), ease: 'lin' },         // slow drift
+  { f0: 245, f1: 256, a: C(1252, 340, 650), b: { u: 1180, v: 20, w: 740 }, ease: 'io' }, // pan to buttons + download bubble
+  { f0: 256, f1: 270, a: { u: 1180, v: 20, w: 740 }, b: { u: 1186, v: 22, w: 728 }, ease: 'lin' },
   // S4/S5: document viewer (clean crop, no viewer chrome)
   { f0: 270, f1: 360, a: C(853, 510, 966), b: C(853, 510, 936), ease: 'lin' },
   { f0: 360, f1: 449, a: C(853, 510, 936), b: C(855, 495, 800), ease: 'io' },
