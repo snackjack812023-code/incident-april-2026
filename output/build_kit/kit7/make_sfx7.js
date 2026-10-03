@@ -1,6 +1,6 @@
 // Synthesises all SFX with FFmpeg lavfi (no external audio -> no licensing questions) and mixes them to audio.wav
 const { spawnSync } = require('child_process'); const fs = require('fs'), path = require('path');
-const S = process.env.S, D = path.join(S, 'sfx'); fs.mkdirSync(D, { recursive: true });
+const W = path.join(__dirname, '..', 'work'), D = path.join(W, 'sfx'); fs.mkdirSync(D, { recursive: true });
 const SR = 48000;
 function ff(args) { const r = spawnSync('ffmpeg', ['-v', 'error', '-y', ...args], { encoding: 'utf8' }); if (r.status !== 0) { console.error(args.join(' ')); console.error(r.stderr); process.exit(1); } }
 function synth(name, expr, dur, post) {
@@ -44,13 +44,13 @@ synth('success',
 console.log('sfx synthesized:', fs.readdirSync(D).filter(f => f.endsWith('.wav')).join(' '));
 
 // ---------------- mix ----------------
-const spec = require('./spec.js');
+const spec = JSON.parse(fs.readFileSync(path.join(W, 'spec7.json'), 'utf8'));
 function peakDb(file) {
   const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', file, '-af', 'astats=metadata=0:reset=0', '-f', 'null', '-'], { encoding: 'utf8' });
   const m = /Peak level dB:\s*(-?[\d.]+)/.exec(r.stderr); return parseFloat(m[1]);
 }
 const peaks = {}; for (const e of spec.sfxEvents) if (!(e.name in peaks)) peaks[e.name] = peakDb(path.join(D, e.name + '.wav'));
-const total = 14.90;
+const total = +(spec.N / spec.FPS).toFixed(4);   // pad to the exact video length
 const ins = [], fl = [];
 spec.sfxEvents.forEach((e, i) => {
   ins.push('-i', path.join(D, e.name + '.wav'));
@@ -59,7 +59,7 @@ spec.sfxEvents.forEach((e, i) => {
 });
 const n = spec.sfxEvents.length;
 fl.push(`${spec.sfxEvents.map((_, i) => `[a${i}]`).join('')}amix=inputs=${n}:normalize=0:duration=longest,apad=whole_dur=${total},atrim=end=${total},alimiter=limit=0.89:level=false,pan=stereo|c0=c0|c1=c0,aformat=sample_fmts=fltp:sample_rates=${SR}[mix]`);
-ff([...ins, '-filter_complex', fl.join(';'), '-map', '[mix]', '-c:a', 'pcm_f32le', path.join(S, 'audio.wav')]);
-const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', path.join(S, 'audio.wav'), '-af', 'astats=metadata=0:reset=0,volumedetect', '-f', 'null', '-'], { encoding: 'utf8' });
+ff([...ins, '-filter_complex', fl.join(';'), '-map', '[mix]', '-c:a', 'pcm_f32le', path.join(W, 'audio7.wav')]);
+const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', path.join(W, 'audio7.wav'), '-af', 'astats=metadata=0:reset=0,volumedetect', '-f', 'null', '-'], { encoding: 'utf8' });
 console.log('mix:', (r.stderr.match(/(Peak level dB|RMS level dB|mean_volume|max_volume):[^\n]*/g) || []).slice(0, 6).join(' | '));
 console.log('events:', spec.sfxEvents.map(e => `${(e.f / 30 - spec.LEAD + (e.off || 0)).toFixed(2)}s ${e.name}@${e.peak}`).join(', '));
