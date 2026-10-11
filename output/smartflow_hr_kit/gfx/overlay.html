@@ -1,0 +1,78 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts.css">
+<style>
+:root{--yellow:#FFD60A;--blue:#1A73FF;--navy:#08143A;--green:#06C755}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;overflow:hidden}
+body{font-family:'PromptX',sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+#cv{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden}
+.tag{position:absolute;left:50%;top:250px;display:none;align-items:center;gap:18px;height:96px;padding:0 40px 0 16px;border-radius:48px;white-space:nowrap;
+  transform-origin:50% 50%;background:rgba(8,20,52,.84);border:2px solid rgba(255,255,255,.20);
+  box-shadow:0 14px 40px rgba(0,6,24,.50),0 0 0 6px rgba(26,115,255,.10)}
+.tag .ic{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#3D8BFF,#1A5FE0);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.tag .ic svg{width:40px;height:40px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tag .tx{font-weight:700;font-size:52px;line-height:1;letter-spacing:.2px;padding-top:4px}
+.ring{position:absolute;display:none;border:5px solid var(--yellow);border-radius:16px}
+#scrim{position:absolute;left:0;top:0;width:1080px;height:380px;opacity:0;background:linear-gradient(180deg,rgba(4,10,30,.80) 0%,rgba(4,10,30,.62) 40%,rgba(4,10,30,.25) 75%,rgba(4,10,30,0) 100%)}
+#cta{position:absolute;left:50%;top:1405px;display:none;align-items:center;gap:20px;height:84px;padding:0 38px 0 30px;border-radius:42px;white-space:nowrap;
+  background:rgba(8,20,52,.92);border:2.5px solid rgba(6,199,85,.85);box-shadow:0 0 30px rgba(6,199,85,.35),0 16px 40px rgba(0,6,24,.55)}
+#cta .b{font-weight:800;font-size:44px} #cta .sep{font-weight:400;font-size:44px;opacity:.55} #cta .l{font-weight:700;font-size:44px}
+#cta .g{color:#3BE07F}
+</style></head><body><div id="cv"><div id="scrim"></div><div id="fx"></div><div id="tags"></div>
+<div id="cta"><span class="b">SmartFlow</span><span class="sep">|</span><span class="l"><span class="g">LINE:</span> @smartflow</span></div>
+</div>
+<script>
+const SP=window.__SPEC, FR=SP.frames;
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const E={out3:p=>1-Math.pow(1-p,3),outBack:p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2)}};
+const prog=(f,f0,len)=>clamp((f-f0)/len);
+const SC={}; SP.scenes.forEach(s=>SC[s[0]]=[s[1],s[2]]);
+const ICON={
+  users:'<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><circle cx="16.8" cy="9" r="2.6"/><path d="M15.6 13.9c2.8.3 4.9 2.3 4.9 5.1"/>',
+  clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3.2 2"/>',
+  calendar:'<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h.01M12 13.5h.01M16 13.5h.01M8 17h.01M12 17h.01"/>',
+  timer:'<circle cx="12" cy="13.5" r="7"/><path d="M12 13.5V10M10 3h4M12 3v3.5M18.3 7.2l1.3-1.3"/>',
+  coins:'<rect x="2.5" y="6.5" width="19" height="11" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.6h.01M18 14.4h.01"/>',
+  bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.6 1.6H4.4z"/><path d="M10 20.2a2 2 0 0 0 4 0"/>',
+  chart:'<path d="M4 4v16h16"/><path d="M8.5 16v-4.5M12.5 16V8M16.5 16v-6"/>',
+  check:'<circle cx="12" cy="12" r="8.5"/><path d="M8 12.3l2.7 2.7 5.5-5.6"/>'};
+// build tags
+SP.tags.forEach(t=>{const el=document.createElement('div');el.className='tag';el.id='tag'+t.k;
+  el.innerHTML=`<span class="ic"><svg viewBox="0 0 24 24">${ICON[t.icon]}</svg></span><span class="tx">${t.text}</span>`;$('tags').appendChild(el);});
+function tag(t,f){
+  const el=$('tag'+t.k), on=t.on, off=t.off;
+  if(f<on||f>=off+3){el.style.display='none';return 0}
+  const p=E.outBack(prog(f,on,8)), o=clamp(prog(f,on,5)), q=prog(f,off,3);
+  el.style.display='flex';
+  el.style.transform=`translateX(-50%) translateY(${(1-clamp(p))*-16-10*q}px) scale(${0.88+0.12*p})`;
+  el.style.opacity=o*(1-q);
+  return o*(1-q);
+}
+// rings follow the camera of their scene layer
+const rings=[];
+SP.rings.forEach((r,i)=>{const el=document.createElement('div');el.className='ring';$('fx').appendChild(el);rings.push(el);});
+function camOf(f,k){const L=FR[f].layers.find(l=>l.k===k);return L?L:null}
+function ring(r,el,f){
+  const L=camOf(f,r.k); if(!L||f<r.on||f>=r.off){el.style.display='none';return}
+  const [cx,cy,w]=L.cam, h=w*1920/1080, s=1080/w, [x0,y0,x1,y1]=r.box, pad=8;
+  const X=(x0-(cx-w/2))*s-pad, Y=(y0-(cy-h/2))*s-pad, W=(x1-x0)*s+2*pad, H=(y1-y0)*s+2*pad;
+  const pin=E.out3(prog(f,r.on,7)), pout=1-prog(f,r.off-5,5), a=pin*pout*L.a;
+  const pulse=1+0.012*Math.sin((f-r.on)/30*2*Math.PI*1.8);
+  el.style.display='block'; el.style.left=X+'px'; el.style.top=Y+'px'; el.style.width=W+'px'; el.style.height=H+'px';
+  el.style.borderColor=`rgba(255,214,10,${a})`;
+  el.style.boxShadow=`0 0 0 4000px rgba(4,10,30,${0.26*a}),0 0 28px 6px rgba(255,214,10,${0.55*a}),inset 0 0 16px rgba(255,214,10,${0.22*a})`;
+  el.style.transform=`scale(${(1.14-0.14*pin)*pulse})`;
+}
+function cta(f){
+  const el=$('cta'), on=SP.cta.on; if(f<on){el.style.display='none';return}
+  const p=E.outBack(prog(f,on,10)), o=clamp(prog(f,on,6));
+  el.style.display='flex'; el.style.opacity=o; el.style.transform=`translateX(-50%) translateY(${(1-clamp(p))*24}px) scale(${0.9+0.1*p})`;
+}
+function renderAt(f){ let v=0; SP.tags.forEach(t=>{v=Math.max(v,tag(t,f)||0)}); $('scrim').style.opacity=v; SP.rings.forEach((r,i)=>ring(r,rings[i],f)); cta(f); }
+window.renderAt=renderAt;
+(async()=>{
+  await Promise.all(['400','700','800'].flatMap(w=>[document.fonts.load(w+' 40px PromptX','กขคงจ'),document.fonts.load(w+' 40px PromptX','AaGg?!')]));
+  await document.fonts.ready; window.ready=true;
+})();
+</script></body></html>
