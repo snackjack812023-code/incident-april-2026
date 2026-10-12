@@ -1,82 +1,89 @@
-"""Renders the picture plate (1080x1920, 30 fps) from the 4x super-resolved storyboard panels -> lossless FFV1.
-Per frame and scene layer: camera (spec.cam) -> affine warp of the SR panel (Lanczos; 2x mip level when zoomed out),
-feathered rounded panel edge over a soft-focus extension of the same panel (no black bars, no stretching),
-180-degree-shutter motion blur on fast moves, crossfade between scene layers around cuts.
+"""Renders the picture (1080x1920, 30 fps) from the 4x super-resolved storyboard images -> lossless FFV1.
+Per frame and scene layer: camera (spec.cam) -> affine warp (Lanczos) from a mip level picked so the source is only ever
+mildly reduced (no aliasing on zoomed-out frames, no upscaling blur on zoomed-in frames). Where the camera shows area outside
+the image, an extension of the same image is used: 'seamless' (mirrored, lightly blurred: continues the bokeh background)
+or 'card' (soft-focus backdrop with a shadow: end-card look). Motion blur (0.5-frame shutter, up to 12 sub-frames) only on the
+zoom-through transitions and the opening crash zoom, so text is never smeared during the reading holds.
 usage: python3 render.py [out.mkv] [frames 0-600 | 10,50] [--png dir]"""
 import math, os, subprocess, sys, time
+from collections import OrderedDict
 import numpy as np, cv2
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import spec as S
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); WORK = os.path.join(ROOT, 'work')
-OW, OH, PAD = S.OW, S.OH, 460            # PAD: extension margin in 1x panel px
+OW, OH, PAD = S.OW, S.OH, 560
+LEVELS = (0.95, 1.27, 1.69, 2.25, 3.0)
 cv2.setNumThreads(4)
 
 def smoothstep(e0, e1, x):
     t = np.clip((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t)
 
-class Panel:
+class Image:
     def __init__(self, k):
-        self.k = k
-        sr = cv2.imread(os.path.join(WORK, f'sr_p{k}.png'), cv2.IMREAD_COLOR)            # BGR, 4x
-        clean = cv2.imread(os.path.join(WORK, f'clean_p{k}.png'), cv2.IMREAD_COLOR)      # BGR, 1x
-        self.w1, self.h1 = clean.shape[1], clean.shape[0]
-        # rounded-rect alpha (drops the storyboard's white gutter corners), soft edge
-        def mask(m):
-            a = np.zeros((self.h1 * m, self.w1 * m), np.float32); r = int(9 * m); i = int(1.5 * m)
-            x0, y0, x1, y1 = i, i, self.w1 * m - 1 - i, self.h1 * m - 1 - i
-            cv2.rectangle(a, (x0 + r, y0), (x1 - r, y1), 1.0, -1); cv2.rectangle(a, (x0, y0 + r), (x1, y1 - r), 1.0, -1)
-            for cx, cy in ((x0 + r, y0 + r), (x1 - r, y0 + r), (x0 + r, y1 - r), (x1 - r, y1 - r)): cv2.circle(a, (cx, cy), r, 1.0, -1, cv2.LINE_AA)
-            return cv2.GaussianBlur(a, (0, 0), 2.6 * m)
-        self.lv = {4: (sr, mask(4)), 2: (cv2.resize(sr, (self.w1 * 2, self.h1 * 2), interpolation=cv2.INTER_AREA), mask(2))}
-        # soft-focus extension: reflect-padded panel, blur grows and light falls off with distance from the panel edge
-        big = cv2.copyMakeBorder(clean, PAD, PAD, PAD, PAD, cv2.BORDER_REFLECT_101).astype(np.float32)
-        near, far = cv2.GaussianBlur(big, (0, 0), 5), cv2.GaussianBlur(big, (0, 0), 34)
+        sr = cv2.imread(os.path.join(WORK, f'sr_s{k}.png'), cv2.IMREAD_COLOR)            # BGR, 4x
+        clean = cv2.imread(os.path.join(WORK, f'clean_s{k}.png'), cv2.IMREAD_COLOR)      # BGR, 1x
+        self.h1, self.w1 = clean.shape[:2]
+        self.lv = {L: cv2.resize(sr, (round(self.w1 * L), round(self.h1 * L)), interpolation=cv2.INTER_AREA) for L in LEVELS}
+        del sr
+        style = S.EXT_STYLE.get(k, 'seamless')
+        x = cv2.copyMakeBorder(clean, 0, 0, PAD, PAD, cv2.BORDER_REFLECT_101)
+        top = cv2.copyMakeBorder(x, PAD, 0, 0, 0, cv2.BORDER_REFLECT_101)[:PAD]
+        bot = np.repeat(x[-1:], PAD, axis=0)                     # bottom: replicate (no mirrored logos / captions)
+        big = np.concatenate([top, x, bot]).astype(np.float32)
         yy, xx = np.mgrid[0:big.shape[0], 0:big.shape[1]].astype(np.float32)
         dx = np.maximum(np.maximum(PAD - xx, xx - (PAD + self.w1 - 1)), 0); dy = np.maximum(np.maximum(PAD - yy, yy - (PAD + self.h1 - 1)), 0)
         d = np.sqrt(dx * dx + dy * dy)[..., None]
-        t = smoothstep(0, 55, d)
-        ext = near * (1 - t) + far * t
-        navy = np.array([44, 16, 8], np.float32)                                       # BGR
-        ext = ext * (1 - 0.58 * t) + navy * (0.26 * t)
-        self.bg = ext
+        if style == 'seamless':
+            b1, b2, b3 = (cv2.GaussianBlur(big, (0, 0), s) for s in (2.5, 8, 22))
+            t1, t2 = smoothstep(0, 40, d), smoothstep(60, 200, d)
+            ext = b1 * (1 - t1) + b2 * t1; ext = ext * (1 - t2) + b3 * t2
+            ext = ext * (1 - 0.22 * t2) + np.array([40, 16, 8], np.float32) * 0.10 * t2
+        else:   # 'card': soft-focus backdrop, darker, with a contact shadow along the image edge
+            b2, b3 = cv2.GaussianBlur(big, (0, 0), 16), cv2.GaussianBlur(big, (0, 0), 34)
+            t = smoothstep(0, 140, d); ext = b2 * (1 - t) + b3 * t
+            shadow = 0.42 * np.exp(-d / 46.0)
+            ext = ext * (1 - 0.40) * (1 - shadow) + np.array([46, 18, 8], np.float32) * 0.16
+        self.ext = ext.astype(np.float32); self.style = style
 
     def view(self, cam):
-        """render this panel through camera (cx, cy, w) -> float32 BGR (OH, OW, 3)"""
         cx, cy, w = cam; h = w * OH / OW; s = OW / w; u, v = cx - w / 2, cy - h / 2
-        m = 4 if s / 4 >= 0.8 else 2
-        img, alpha = self.lv[m]
-        M = np.float32([[s / m, 0, 0.5 * s / m - u * s - 0.5], [0, s / m, 0.5 * s / m - v * s - 0.5]])
-        fg = cv2.warpAffine(img, M, (OW, OH), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_REPLICATE).astype(np.float32)
-        a = cv2.warpAffine(alpha, M, (OW, OH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=0)[..., None]
+        L = next((L for L in LEVELS if L >= s - 1e-6), LEVELS[-1])
+        M = np.float32([[s / L, 0, 0.5 * s / L - u * s - 0.5], [0, s / L, 0.5 * s / L - v * s - 0.5]])
+        fg = cv2.warpAffine(self.lv[L], M, (OW, OH), flags=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_REFLECT_101).astype(np.float32)
+        inside = u >= -1e-3 and v >= -1e-3 and u + w <= self.w1 + 1e-3 and v + h <= self.h1 + 1e-3
+        if inside: return fg
         Mb = np.float32([[s, 0, (0.5 - PAD - u) * s - 0.5], [0, s, (0.5 - PAD - v) * s - 0.5]])
-        bg = cv2.warpAffine(self.bg, Mb, (OW, OH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+        bg = cv2.warpAffine(self.ext, Mb, (OW, OH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+        # coverage of the real image per canvas pixel (feathered edge)
+        X = (np.arange(OW, dtype=np.float32) + 0.5) / s + u; Y = (np.arange(OH, dtype=np.float32) + 0.5) / s + v
+        fe = 1.6 / s if self.style == 'seamless' else 0.9 / s
+        ax = np.clip(np.minimum(X - 0, self.w1 - X) / fe + 0.5, 0, 1); ay = np.clip(np.minimum(Y - 0, self.h1 - Y) / fe + 0.5, 0, 1)
+        a = (ay[:, None] * ax[None, :])[..., None]
         return bg * (1 - a) + fg * a
 
-PANELS = {}
-def panel(k):
-    if k not in PANELS: PANELS[k] = Panel(k)
-    return PANELS[k]
+CACHE = OrderedDict()
+def image(k):
+    if k in CACHE: CACHE.move_to_end(k); return CACHE[k]
+    CACHE[k] = Image(k)
+    while len(CACHE) > 3: CACHE.popitem(last=False)
+    return CACHE[k]
 
-def corners(cam):
-    cx, cy, w = cam; h = w * OH / OW
-    return np.array([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2])
+def corners(c):
+    cx, cy, w = c; h = w * OH / OW; return np.array([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2])
 
 def blur_window(k, f):
-    """motion blur only where the brief asks for it: the zoom-through scene changes (+ the hook's fast zoom);
-    regular Ken Burns moves stay crisp so the text in the panels is never smeared"""
-    if k == 1 and f <= 9: return True
-    return any(c - S.OUT_LEN <= f < c + S.IN_LEN for c in S.CUTS)
+    if k == 1 and f <= 9: return True                                   # opening crash zoom
+    return any(c - S.OUT_LEN <= f < c + S.IN_LEN for c in S.CUTS)      # zoom-through transitions
 
 def layer(k, f):
-    """scene k at frame f with motion blur (subframes over a 0.5-frame shutter) inside the transition windows"""
-    if not blur_window(k, f): return panel(k).view(S.cam(k, f)), 1
+    if not blur_window(k, f): return image(k).view(S.cam(k, f)), 1
     ca, cb = S.cam(k, f - 0.25), S.cam(k, f + 0.25)
-    d = np.abs(corners(ca) - corners(cb)).max() * OW / ((ca[2] + cb[2]) / 2)      # max corner travel in canvas px
+    d = np.abs(corners(ca) - corners(cb)).max() * OW / ((ca[2] + cb[2]) / 2)
     K = int(min(12, max(1, math.ceil(d / 1.6))))
-    if K == 1: return panel(k).view(S.cam(k, f)), 1
+    if K == 1: return image(k).view(S.cam(k, f)), 1
     acc = np.zeros((OH, OW, 3), np.float32)
-    for j in range(K): acc += panel(k).view(S.cam(k, f - 0.25 + 0.5 * j / (K - 1)))
+    for j in range(K): acc += image(k).view(S.cam(k, f - 0.25 + 0.5 * j / (K - 1)))
     return acc / K, K
 
 def render(f):

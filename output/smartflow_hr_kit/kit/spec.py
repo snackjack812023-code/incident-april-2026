@@ -1,57 +1,76 @@
-"""Timeline for SmartFlow HR & Time Attendance TikTok (storyboard scenes 01-09, 20.0 s, 30 fps, cuts on a 120 BPM grid).
-All geometry is in 1x storyboard-panel px (the renderer samples the 4x super-resolved panels).
-Camera = (cx, cy, w); the 9:16 window is w wide and w*16/9 tall. Writes work/spec.json for overlay/audio/renderer."""
+"""Timeline for SmartFlow HR & Time Attendance TikTok v2 (9 storyboard images, 20.0 s, 30 fps, cuts on a 120 BPM grid).
+Geometry in 1x image px (each image ~941x1672, already 9:16); the renderer samples 4x super-resolved images.
+Camera = (cx, cy, w): the 9:16 window is w wide and w*16/9 tall. Writes work/spec.json + work/layout.json."""
 import json, math, os
 
 FPS, N = 30, 600
 OW, OH = 1080, 1920
 ASP = OH / OW
-PANEL = {1: (340, 483), 2: (342, 483), 3: (338, 483), 4: (340, 436), 5: (342, 436), 6: (338, 436), 7: (340, 502), 8: (342, 502), 9: (338, 502)}
-# scene k uses storyboard panel k; frame ranges from the brief (0-2, 2-4, 4-6, 6-8, 8-11, 11-13, 13-16, 16-18, 18-20 s)
+IMG = {k: (941, 1672) for k in range(1, 10)}
 SCENES = [(1, 0, 60), (2, 60, 120), (3, 120, 180), (4, 180, 240), (5, 240, 330), (6, 330, 390), (7, 390, 480), (8, 480, 540), (9, 540, 600)]
 CUTS = [s[1] for s in SCENES[1:]]
 OUT_LEN, IN_LEN, XF = 4, 6, 2          # zoom-through: 4 frames push-in before a cut, 6 frames settle after, 2+2 frames crossfade
+SAFE = dict(top=220, bottom=1500, left=40, right=1040, rail_x=960, rail_y=950)   # TikTok UI-free zone used by the checks
+TAG_Y = (250, 346)                     # keyword tag band (canvas y)
 
 def _io(p): return 0.5 - 0.5 * math.cos(math.pi * p)
-EASE = {'lin': lambda p: p, 'io': _io, 'out3': lambda p: 1 - (1 - p) ** 3, 'in2': lambda p: p * p, 'in3': lambda p: p ** 3,
-        'iocubic': lambda p: 4 * p ** 3 if p < 0.5 else 1 - (-2 * p + 2) ** 3 / 2}
+EASE = {'lin': lambda p: p, 'io': _io, 'out3': lambda p: 1 - (1 - p) ** 3, 'in2': lambda p: p * p}
+def C(u, v, w): return (u + w / 2, v + w * ASP / 2, w)          # camera from its top-left corner
+FULL = 941.0
 
-# camera keyframes (frame, (cx, cy, w), ease-of-segment-ending-here)
-# Each scene: short hold on the storyboard headline -> dive into the UI -> slow drift. In the zoomed part the first UI row
-# (UI_TOP) sits at canvas y >= 362, below the keyword tag (y 250-346), so the tag never covers UI text: cy <= fit_cy(UI_TOP, 372, w).
-def fit_cy(panel_y, canvas_y, w): return panel_y - canvas_y * w / OW + w * ASP / 2
+# per scene: headline box (x0, y0, x1, y1) and the protected UI block (x0, y0, x1, y1) in image px
+HEAD = {1: (55, 955, 895, 1325), 2: (59, 196, 901, 437), 3: (120, 167, 914, 423), 4: (30, 195, 905, 487), 5: (30, 164, 870, 452),
+        6: (30, 181, 870, 447), 7: (38, 144, 914, 425), 8: (70, 161, 858, 419), 9: (57, 96, 914, 436)}
+UI = {2: (329, 560, 878, 849), 3: (210, 620, 545, 1068), 4: (314, 606, 905, 1100), 5: (298, 589, 892, 1038), 6: (286, 573, 848, 1012),
+      7: (60, 555, 594, 1198), 8: (250, 511, 860, 1030), 9: (47, 1127, 906, 1515)}
+
+# opening framing of scenes 2-8: full width, shifted down so the headline clears TikTok's top tabs (headline top >= 228 px)
+def opening(k):
+    v = min(0.0, HEAD[k][1] - 228 / (OW / FULL))
+    return C(0, v, FULL)
+
 KF = {
-    1: [(0, (170, 246, 400), None), (8, (168, 300, 298), 'out3'), (56, (168, 302, 286), 'lin')],
-    2: [(60, (171, 230, 342), None), (72, (171, 232, 336), 'lin'), (100, (214, 323, 260), 'io'), (120, (214, 321, 254), 'lin')],
-    3: [(120, (169, 228, 338), None), (130, (169, 230, 332), 'lin'), (156, (116, 290, 200), 'io'), (180, (116, 296, 192), 'lin')],
-    4: [(180, (170, 205, 320), None), (190, (170, 207, 314), 'lin'), (208, (200, 277, 230), 'io'), (226, (232, 269.5, 216), 'io'), (240, (235, 266, 210), 'lin')],
-    5: [(240, (171, 206, 322), None), (252, (171, 208, 316), 'lin'), (274, (240, 261.5, 196), 'io'), (300, (248, 256, 186), 'io'), (330, (249, 254, 182), 'lin')],
-    6: [(330, (169, 205, 320), None), (340, (169, 207, 314), 'lin'), (362, (230, 263.5, 200), 'io'), (390, (232, 260.5, 194), 'lin')],
-    7: [(390, (170, 203, 320), None), (400, (170, 205, 314), 'lin'), (416, (113, 283, 232), 'io'), (480, (113, 280, 226), 'lin')],
-    8: [(480, (171, 203, 320), None), (490, (171, 205, 314), 'lin'), (508, (200, 264, 236), 'io'), (528, (180, 253, 214), 'io'), (540, (179, 251, 210), 'lin')],
-    9: [(540, (169, 300, 560), None), (600, (169, 296, 520), 'io')],     # card: panel top y~345, bottom y~1388 at the end
+    # S1 hook: crash zoom from an end-card size straight onto the problem headline, then beat punches
+    1: [(0, C(-104.5, -186.2, 1150), None), (8, C(30, 1672 - 890 * ASP, 890), 'out3'), (56, C(40, 1672 - 870 * ASP, 870), 'lin')],
+    2: [(60, opening(2), None), (72, C(8, opening(2)[1] - 836.4 + 4, 925), 'lin'),
+        (94, C(303.5, 356, 600), 'io'), (120, C(305.5, 361, 596), 'lin')],
+    3: [(120, opening(3), None), (132, C(8, opening(3)[1] - 836.4 + 4, 925), 'lin'),
+        (150, C(117, 440, 520), 'io'), (180, C(132, 458, 480), 'lin')],
+    4: [(180, opening(4), None), (192, C(8, opening(4)[1] - 836.4 + 4, 925), 'lin'),
+        (210, C(300, 420, 520), 'io'), (228, C(460, 426.2, 515), 'io'), (240, C(466, 436, 505), 'lin')],
+    5: [(240, opening(5), None), (254, C(8, opening(5)[1] - 836.4 + 4, 925), 'lin'),
+        (274, C(297, 380, 600), 'io'), (300, C(478, 422, 480), 'io'), (330, C(488, 432, 470), 'lin')],
+    6: [(330, opening(6), None), (342, C(8, opening(6)[1] - 836.4 + 4, 925), 'lin'),
+        (360, C(270, 380, 560), 'io'), (390, C(283.5, 391, 545), 'lin')],
+    7: [(390, opening(7), None), (402, C(8, opening(7)[1] - 836.4 + 4, 925), 'lin'),
+        (420, C(50, 350, 620), 'io'), (480, C(56, 353, 610), 'lin')],
+    8: [(480, opening(8), None), (492, C(8, opening(8)[1] - 836.4 + 4, 925), 'lin'),
+        (510, C(232, 288, 640), 'io'), (540, C(232, 302, 600), 'lin')],
+    # S9 closing: the whole end card (headline + features + LINE CTA) inside the safe zone, slow zoom in
+    9: [(540, C(470.5 - 620, 1515 - 1475 / (OW / 1240), 1240), None), (600, C(470.5 - 575, 1515 - 1490 / (OW / 1150), 1150), 'lin')],
 }
 BEAT_PUNCH = [15, 30, 45]               # hook: small zoom bumps on the kick (beats 2-4 of bar 1)
-# per scene: storyboard headline bottom (panel y), first protected UI row (panel y), last protected row (panel y)
-HEADLINE_BOTTOM = {2: 126, 3: 120, 4: 110, 5: 117, 6: 122, 7: 107, 8: 101}
-UI_ROWS = {2: (182, 229), 3: (198, 376), 4: (152, 337), 5: (155, 342), 6: (155, 340), 7: (157, 385), 8: (137, 356)}
-TAG_BOX = (250, 346)                    # keyword tag, canvas y
+EXT_STYLE = {1: 'card', 9: 'card'}      # how the area outside the image looks when the camera shows it (default 'seamless')
 
-# highlight rings: (scene, (x0, y0, x1, y1) in panel px, on, off)
+# highlight rings: (scene, (x0, y0, x1, y1), on, off, colour)
 RINGS = [
-    (2, (107, 184, 328, 227), 98, 118),      # KPI tiles
-    (3, (64, 196, 162, 346), 150, 178),      # time 08:30 + QR code
-    (4, (266, 219, 321, 337), 222, 238),     # leave status column (รออนุมัติ / อนุมัติแล้ว)
-    (5, (286, 220, 322, 342), 282, 328),     # OT (ชม.) column (the tab label above is garbled in the AI storyboard: not highlighted)
-    (6, (226, 219, 263, 340), 366, 388),     # รวม (net pay) column
-    (7, (25, 156, 202, 274), 418, 446),      # LINE notification 1
-    (7, (25, 281, 202, 395), 450, 478),      # LINE notification 2
-    (8, (86, 326, 246, 356), 518, 538),      # Export Excel / Export PDF
+    (2, (329, 628, 878, 738), 97, 118, 'yellow'),      # KPI: พนักงานทั้งหมด / เข้างานวันนี้ / ลาวันนี้
+    (3, (210, 620, 545, 760), 150, 163, 'yellow'),     # time 08:30 + date
+    (3, (220, 790, 485, 1068), 165, 178, 'yellow'),    # QR code
+    (4, (762, 795, 906, 1095), 227, 238, 'yellow'),    # leave status column (รออนุมัติ / อนุมัติแล้ว / ไม่อนุมัติ)
+    (5, (484, 587, 670, 650), 272, 292, 'yellow'),     # "คำนวณอัตโนมัติ" tab
+    (5, (768, 684, 892, 1038), 300, 328, 'yellow'),    # OT (ชม.) column
+    (6, (452, 573, 615, 630), 356, 368, 'yellow'),     # "สรุปเงินเดือน" tab
+    (6, (630, 665, 725, 1012), 368, 388, 'yellow'),    # รวม (net pay) column
+    (7, (104, 630, 591, 908), 420, 444, 'yellow'),     # LINE notification: check-in
+    (7, (116, 924, 594, 1198), 450, 478, 'yellow'),    # LINE notification: leave request
+    (8, (256, 964, 660, 1030), 520, 538, 'yellow'),    # Export Excel / Export PDF
+    (9, (45, 1337, 902, 1517), 574, 610, 'green'),     # CTA: ทักเลยที่ LINE : @smartflow
 ]
-# short text overlays from the brief (tag at the top of the safe zone), CTA on the end card
-TAGS = [(2, 'จัดการ HR ง่ายขึ้น', 'users'), (3, 'ลงเวลา', 'clock'), (4, 'ลา', 'calendar'), (5, 'OT', 'timer'), (6, 'เงินเดือน', 'coins'),
-        (7, 'แจ้งเตือน LINE', 'bell'), (8, 'Report', 'chart'), (9, 'ครบในระบบเดียว', 'check')]
-CTA = {'text': 'SmartFlow | LINE: @smartflow', 'on': 556}
+# keyword overlays from the brief; 'anchor' pins a tag to an image point (scene 9: on the laptop base, clear of the phone)
+TAGS = [(2, 'จัดการ HR ง่ายขึ้น', 'users', None), (3, 'ลงเวลา', 'clock', None), (4, 'ลา', 'calendar', None), (5, 'OT', 'timer', None),
+        (6, 'เงินเดือน', 'coins', None), (7, 'แจ้งเตือน LINE', 'bell', None), (8, 'Report', 'chart', None),
+        (9, 'ครบในระบบเดียว', 'check', (318, 1062))]
 
 def scene_of(t):
     for s in SCENES:
@@ -70,7 +89,7 @@ def cam_base(k, t):
     return ks[-1][1]
 
 def cam(k, t):
-    """camera of scene k at (fractional) frame t, including hook punches and zoom-through transitions"""
+    """camera of scene k at (fractional) frame t, incl. hook punches and zoom-through transitions"""
     f0, f1 = next((s[1], s[2]) for s in SCENES if s[0] == k)
     cx, cy, w = cam_base(k, min(max(t, f0), f1))
     if k == 1:
@@ -87,67 +106,79 @@ def layers(t):
     s = scene_of(t)
     for c in CUTS:
         if c - XF <= t < c + XF:
-            a = (t - (c - XF) + 0.5) / (2 * XF)               # 0..1 across the 4 crossfade frames
-            prev = scene_of(c - 1)[0]; nxt = scene_of(c)[0]
-            return [(prev, 1 - a), (nxt, a)]
+            a = (t - (c - XF) + 0.5) / (2 * XF)
+            return [(scene_of(c - 1)[0], 1 - a), (scene_of(c)[0], a)]
     return [(s[0], 1.0)]
 
-def rect_canvas(k, t, box):
-    cx, cy, w = cam(k, t); h = w * ASP; s = OW / w
-    x0, y0, x1, y1 = box
-    return [(x0 - (cx - w / 2)) * s, (y0 - (cy - h / 2)) * s, (x1 - x0) * s, (y1 - y0) * s]
+def to_canvas(k, t, x, y):
+    cx, cy, w = cam(k, t); s = OW / w
+    return (x - (cx - w / 2)) * s, (y - (cy - w * ASP / 2)) * s
 
-def canvas_y(k, t, panel_y):
-    cx, cy, w = cam(k, t); return (panel_y - (cy - w * ASP / 2)) * OW / w
+def box_canvas(k, t, b):
+    x0, y0 = to_canvas(k, t, b[0], b[1]); x1, y1 = to_canvas(k, t, b[2], b[3]); return x0, y0, x1, y1
 
 def tag_window(k):
-    """tag appears once the camera has carried the baked headline clear of the tag zone; leaves 3 frames before the cut"""
+    """top tags appear once the camera has carried the baked headline clear of the tag band; leave 3 frames before the cut"""
     f0, f1 = next((s[1], s[2]) for s in SCENES if s[0] == k)
-    if k not in HEADLINE_BOTTOM: return f0 + 2, N + 10
-    on = next(f for f in range(f0 + 6, f1) if canvas_y(k, f, HEADLINE_BOTTOM[k]) < TAG_BOX[0] - 20)
+    anchored = next(t[3] for t in TAGS if t[0] == k) is not None
+    if anchored: return f0 + 8, N + 10
+    on = next(f for f in range(f0 + IN_LEN, f1) if box_canvas(k, f, HEAD[k])[3] < TAG_Y[0] - 16)
     return on, f1 - 3
 
 def validate():
-    """layout report: while a tag is up, the headline is clear of it and the protected UI rows are below it and above y 1500"""
-    rep, ok = [], True
-    for k, _, _ in TAGS:
-        on, off = tag_window(k)
-        if k not in UI_ROWS: rep.append((k, on, off, None, None, None, True)); continue
-        f1 = next(s[2] for s in SCENES if s[0] == k)
+    """per scene: tag clear of the headline; UI block below the tag and inside the safe zone while the tag is up;
+    every highlighted element inside the safe zone (incl. TikTok's right action rail) while its ring is on"""
+    rows, ok = [], True
+    for k, text, icon, anchor in TAGS:
+        on, off = tag_window(k); f1 = next(s[2] for s in SCENES if s[0] == k)
         fr = range(on, min(off, f1 - OUT_LEN))
-        head = max(canvas_y(k, f, HEADLINE_BOTTOM[k]) for f in fr)
-        top = min(canvas_y(k, f, UI_ROWS[k][0]) for f in fr)
-        bot = max(canvas_y(k, f, UI_ROWS[k][1]) for f in fr)
-        good = head <= TAG_BOX[0] - 10 and top >= TAG_BOX[1] + 14 and bot <= 1500
-        ok &= good; rep.append((k, on, off, round(head), round(top), round(bot), good))
-    return ok, rep
+        if anchor is None:
+            head = max(box_canvas(k, f, HEAD[k])[3] for f in fr)
+            ui = [box_canvas(k, f, UI[k]) for f in fr]
+            top, bot = min(b[1] for b in ui), max(b[3] for b in ui)
+            good = head <= TAG_Y[0] - 10 and top >= TAG_Y[1] + 10 and bot <= SAFE['bottom']
+            rows.append({'scene': k, 'tag': text, 'on': on, 'off': off, 'headline_bottom': round(head), 'ui_top': round(top), 'ui_bottom': round(bot), 'ok': good})
+        else:
+            good = True; rows.append({'scene': k, 'tag': text, 'on': on, 'off': off, 'anchored': anchor, 'ok': True})
+        ok &= good
+    rings = []
+    for k, b, on, off, col in RINGS:
+        f1 = next(s[2] for s in SCENES if s[0] == k); worst = []
+        for f in range(on, min(off, f1 - OUT_LEN)):
+            x0, y0, x1, y1 = box_canvas(k, f, b)
+            right_lim = SAFE['rail_x'] if y1 > SAFE['rail_y'] else SAFE['right']
+            worst.append(max(0, SAFE['left'] - x0, x1 - right_lim, SAFE['top'] - y0, y1 - SAFE['bottom']))
+        w_ = max(worst) if worst else 0; good = w_ <= 6
+        ok &= good; rings.append({'scene': k, 'box': b, 'on': on, 'off': off, 'outside_px': round(w_, 1), 'ok': good})
+    return ok, rows, rings
 
-# sound cues (frames): whoosh into every cut, click as the function switches, pop on every highlight (ding for the LINE
-# notifications), soft digital blip when a keyword tag appears, scan beep on the QR
 SFX = ([{'f': 0, 'name': 'whoosh', 'peak': -17, 'off': 0.0}] +
        [{'f': c, 'name': 'whoosh', 'peak': -18, 'off': -0.10} for c in CUTS] +
        [{'f': c + 3, 'name': 'click', 'peak': -22} for c in CUTS] +
        [{'f': r[2], 'name': 'pop', 'peak': -21} for r in RINGS if r[0] != 7] +
        [{'f': r[2], 'name': 'ding', 'peak': -19} for r in RINGS if r[0] == 7] +
-       [{'f': tag_window(k)[0], 'name': 'blip', 'peak': -28} for k, _, _ in TAGS] +
-       [{'f': 160, 'name': 'beep', 'peak': -24}, {'f': CTA['on'], 'name': 'pop', 'peak': -19}])
+       [{'f': 165, 'name': 'beep', 'peak': -24}])
 
 def export():
+    tags = []
+    for k, text, icon, anchor in TAGS:
+        on, off = tag_window(k); tags.append({'k': k, 'text': text, 'icon': icon, 'on': on, 'off': off, 'anchor': anchor})
+    sfx = SFX + [{'f': t['on'], 'name': 'blip', 'peak': -28} for t in tags]
     frames = []
     for f in range(N):
-        L = layers(f)
-        frames.append({'f': f, 'layers': [{'k': k, 'a': round(a, 4), 'cam': [round(v, 3) for v in cam(k, f)]} for k, a in L]})
-    rings = [{'k': k, 'box': box, 'on': on, 'off': off} for k, box, on, off in RINGS]
-    spec = {'FPS': FPS, 'N': N, 'OW': OW, 'OH': OH, 'PANEL': PANEL, 'scenes': SCENES, 'cuts': CUTS, 'rings': rings,
-            'tags': [{'k': k, 'text': t, 'icon': i, 'on': tag_window(k)[0], 'off': tag_window(k)[1]} for k, t, i in TAGS], 'cta': CTA, 'sfx': SFX, 'frames': frames}
-    out = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'work', 'spec.json')
-    json.dump(spec, open(out, 'w'), ensure_ascii=False)
-    sc = [OW / l['cam'][2] / 4 for fr in frames for l in fr['layers']]   # canvas px per SR px
-    ok, rep = validate(); spec_layout = {'ok': ok, 'rows': rep}
-    json.dump(spec_layout, open(out.replace('spec.json', 'layout.json'), 'w'))
-    print(f'spec: {N} frames ({N / FPS:.2f} s), cuts {CUTS}; SR sampling scale {min(sc):.2f}..{max(sc):.2f}x; sfx {len(SFX)}')
-    for k, on, off, head, top, bot, good in rep:
-        print(f'  S{k} tag f{on}-{off}' + ('' if head is None else f': headline bottom <= {head}, UI rows {top}..{bot}') + ('  OK' if good else '  CHECK'))
+        frames.append({'f': f, 'layers': [{'k': k, 'a': round(a, 4), 'cam': [round(v, 3) for v in cam(k, f)]} for k, a in layers(f)]})
+    rings = [{'k': k, 'box': b, 'on': on, 'off': off, 'color': col} for k, b, on, off, col in RINGS]
+    spec = {'FPS': FPS, 'N': N, 'OW': OW, 'OH': OH, 'scenes': SCENES, 'cuts': CUTS, 'rings': rings, 'tags': tags,
+            'tag_y': TAG_Y, 'safe': SAFE, 'sfx': sfx, 'frames': frames}
+    work = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'work')
+    json.dump(spec, open(os.path.join(work, 'spec.json'), 'w'), ensure_ascii=False)
+    ok, rows, ringrep = validate()
+    json.dump({'ok': ok, 'tags': rows, 'rings': ringrep}, open(os.path.join(work, 'layout.json'), 'w'), ensure_ascii=False, indent=1)
+    sc = [OW / l['cam'][2] for fr in frames for l in fr['layers']]
+    print(f'spec: {N} frames ({N / FPS:.2f} s), cuts {CUTS}; image scale {min(sc):.2f}..{max(sc):.2f}x; sfx {len(sfx)}; layout {"OK" if ok else "CHECK"}')
+    for r in rows: print('  tag', r)
+    for r in ringrep:
+        if not r['ok']: print('  ring outside safe zone:', r)
 
 if __name__ == '__main__':
     export()

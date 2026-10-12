@@ -10,7 +10,7 @@ g = ('[0:v]setpts=N/(30*TB),format=gbrp[v0];[1:v]setpts=N/(30*TB),format=gbrap[o
 args = ['ffmpeg', '-v', 'error', '-stats', '-y', '-i', os.path.join(ROOT, 'work', 'plate.mkv'),
         '-framerate', '30', '-start_number', '0', '-i', os.path.join(ROOT, 'gfx', 'ov', '%04d.png'), '-i', os.path.join(ROOT, 'work', 'audio.wav'),
         '-filter_complex', g, '-map', '[vout]', '-map', '[aout]', '-frames:v', str(N), '-r', '30', '-fps_mode', 'cfr',
-        '-c:v', 'libx264', '-preset', 'slow', '-crf', os.environ.get('CRF', '14'), '-profile:v', 'high', '-level:v', '4.2', '-pix_fmt', 'yuv420p',
+        '-c:v', 'libx264', '-preset', 'slow', '-crf', os.environ.get('CRF', '16'), '-profile:v', 'high', '-level:v', '4.2', '-pix_fmt', 'yuv420p',
         '-g', '60', '-bf', '2', '-maxrate', '18M', '-bufsize', '36M', '-x264-params', 'aq-mode=3:aq-strength=0.9:deblock=-1,-1:psy-rd=1.0,0.15',
         '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
         '-c:a', 'aac', '-b:a', '256k', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', '-t', f'{N / 30:.4f}', out]
