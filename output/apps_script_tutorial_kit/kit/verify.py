@@ -22,8 +22,17 @@ check(v['pix_fmt'] == 'yuv420p' and v.get('color_primaries') == 'bt709' and v.ge
 check(not any(sd.get('rotation') for sd in v.get('side_data_list', [])), 'no rotation flag')
 check(a['codec_name'] == 'aac' and int(a['sample_rate']) == 48000 and a['channels'] == 2, f'audio {a["codec_name"]} {a["sample_rate"]} Hz {a["channels"]} ch {int(a.get("bit_rate", 0)) // 1000} kb/s')
 check(abs(float(v['duration']) - float(a['duration'])) < 0.05, f'video {float(v["duration"]):.3f} s / audio {float(a["duration"]):.3f} s')
-with open(f, 'rb') as fh: head = fh.read(1 << 16)
-check(head.find(b'moov') < head.find(b'mdat') if b'moov' in head else False, 'faststart (moov before mdat)')
+atoms = []                                                    # top-level MP4 boxes, in file order
+with open(f, 'rb') as fh:
+    while True:
+        h = fh.read(8)
+        if len(h) < 8: break
+        size, kind = int.from_bytes(h[:4], 'big'), h[4:].decode('latin1')
+        if size == 1: size = int.from_bytes(fh.read(8), 'big'); fh.seek(size - 16, 1)
+        else: fh.seek(size - 8, 1)
+        atoms.append(kind)
+        if size == 0: break
+check('moov' in atoms and 'mdat' in atoms and atoms.index('moov') < atoms.index('mdat'), f'faststart (top-level boxes: {" ".join(atoms)})')
 e = run(['ffmpeg', '-v', 'error', '-i', f, '-f', 'null', '-']).stderr.strip()
 check(e == '', 'decodes without errors' + ('' if not e else ': ' + e[:200]))
 bd = run(['ffmpeg', '-hide_banner', '-i', f, '-vf', 'blackdetect=d=0.1:pix_th=0.08', '-an', '-f', 'null', '-']).stderr
