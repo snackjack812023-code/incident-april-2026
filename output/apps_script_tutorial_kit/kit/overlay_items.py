@@ -9,7 +9,7 @@ import edl, timeline as TL
 FPS = TL.FPS
 def mk(s):
     s = html.escape(s)
-    return re.sub(r'\[\[(.+?)\]\]', r'<span class="kw">\1</span>', s)
+    return re.sub(r'\[\[(.+?)\]\]', r'<span class="kw">\1</span>', s).replace('\n', '<br>')
 
 def items():
     out = []
