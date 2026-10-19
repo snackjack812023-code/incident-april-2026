@@ -17,7 +17,8 @@ X264 = ['-c:v', 'libx264', '-preset', 'slow', '-tune', 'film', '-b:v', '4600k', 
 if __name__ == '__main__':
     out_dir = sys.argv[1]; os.makedirs(out_dir, exist_ok=True)
     src, pic, log = (os.path.join(TL.W, n) for n in ('video.mp4', 'video_final.mp4', 'x264_2pass'))
-    for p, out in ((1, os.devnull), (2, pic)):
+    fresh = os.path.exists(pic) and os.path.getmtime(pic) > os.path.getmtime(src)      # picture unchanged: keep it
+    for p, out in () if fresh else ((1, os.devnull), (2, pic)):
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', src, '-an'] + X264 + ['-pass', str(p), '-passlogfile', log]
                        + (['-f', 'mp4'] if p == 1 else []) + [out], check=True)
     for name, mix, title in OUTS:

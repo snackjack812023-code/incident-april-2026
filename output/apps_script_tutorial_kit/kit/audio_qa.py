@@ -42,7 +42,10 @@ while i < len(q):
         i = j
     else: i += 1
 print('quiet stretches >= 1.0 s (clean):', ', '.join(f'{a:.1f}-{b:.1f}s [{c}]' for a, b, c in runs) or 'none')
-# 4) bed vs voice in the main mix: level difference where the voice talks
+# 4) music vs voice in the main mix (the music plays only at the start and the end)
 sp = np.load(os.path.join(TL.W, 'speech_mask.npy'))
-diff = main - clean * (np.sqrt(np.mean(main[sp] ** 2)) / np.sqrt(np.mean(clean[sp] ** 2)))
-print(f'main mix: bed+sfx under speech {rms_db(diff[sp]) - rms_db(main[sp]):.1f} dB relative to the voice')
+mp = os.path.join(TL.W, 'music_mask.npy'); mm = np.load(mp) if os.path.exists(mp) else np.ones_like(sp)
+k = float(np.dot(main[sp], clean[sp]) / np.dot(clean[sp], clean[sp])); diff = main - k * clean      # music + sfx alone
+both, alone = sp & mm, mm & ~sp
+print(f'main mix: music+sfx under the speech (where the music plays) {rms_db(diff[both]) - rms_db(k * clean[both]):.1f} dB re the voice; '
+      f'music where nobody talks {rms_db(main[alone]) - rms_db(k * clean[sp]):.1f} dB re the voice level')

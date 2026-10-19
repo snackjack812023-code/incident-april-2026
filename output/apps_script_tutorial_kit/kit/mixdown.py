@@ -3,14 +3,16 @@
           keeps its own source time (lip/click sync by construction); 8 ms fades at real cuts only (contiguous clips are
           left untouched, so no dip inside a word)
   clean : voice only -> -14 LUFS integrated, true peak <= -1 dBTP
-  main  : voice + a very low original lo-fi bed (synthesised here, rights-free, ducked under the speech) + a few soft SFX
-          (pop on titles, 2 clicks on key buttons, success chime) -> -14 LUFS, <= -1 dBTP
+  main  : voice + original soft-chord music at the start (hook -> STEP 1 card) and at the end ("เสร็จแล้ว!" -> CTA),
+          synthesised by kit/music.py (rights-free), ~7 dB under the voice where nobody talks and dipped a further
+          9 dB under the speech; the steps in between stay voice only. Plus a few soft SFX (pop on titles, 2 clicks on
+          key buttons, success chime in the music's key) -> -14 LUFS, <= -1 dBTP
 Writes work/mix_clean.wav, work/mix_main.wav"""
 import os, sys, wave
 import numpy as np
 from scipy import signal
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import timeline as TL, overlay_items as OI
+import timeline as TL, overlay_items as OI, music as MU
 
 SR = 48000; FPS = TL.FPS; W = TL.W
 N = int(round(TL.N / FPS * SR))
@@ -68,45 +70,16 @@ def finish(x, target=-14.0):
     x = tp_limit(x)
     return x
 
-# ---------------- lo-fi bed (original, synthesised)
-BPM = 86.0; BEAT = 60 / BPM
-def rhodes(f, dur, vel):
-    n = int((dur + 0.8) * SR); t = tt(n)
-    I = 0.8 * np.exp(-t / 0.25) * (0.5 + 0.5 * vel) + 0.1
-    y = np.sin(2 * np.pi * f * t + I * np.sin(2 * np.pi * f * t))
-    env = (1 - np.exp(-t / 0.006)) * (0.6 * np.exp(-t / 0.6) + 0.4 * np.exp(-t / 2.5)) * np.clip(1 - (t - dur) / 0.35, 0, 1)
-    return filt(y * env, 'low', 2600) * vel
-
-def hz(m): return 440 * 2 ** ((m - 69) / 12)
-CHORDS = [[53, 57, 60, 64], [52, 55, 59, 62], [50, 53, 57, 60], [48, 52, 55, 59]]    # Fmaj7 Em7 Dm7 Cmaj7
-ROOTS = [41, 40, 38, 36]
-def bgm(n_samples):
-    L = np.zeros(n_samples); R = np.zeros(n_samples)
-    bar = 4 * BEAT; nb = int(np.ceil(n_samples / SR / bar)) + 1
-    def put(x, t0, pan=0.5, g=1.0):
-        i = int(t0 * SR)
-        if i >= n_samples: return
-        m = min(len(x), n_samples - i); L[i:i + m] += x[:m] * g * (1 - pan) * 1.4; R[i:i + m] += x[:m] * g * pan * 1.4
-    for b in range(nb):
-        ch = CHORDS[b % 4]; t0 = b * bar
-        for j, m in enumerate(ch): put(rhodes(hz(m), 2.6 * BEAT, 0.55), t0 + 0.012 * j, 0.35 + 0.1 * j, 0.16)
-        for j, m in enumerate(ch[1:]): put(rhodes(hz(m + 12), 0.4 * BEAT, 0.35), t0 + 2.5 * BEAT, 0.6, 0.07)
-        r = hz(ROOTS[b % 4] + 12); n = int(3.6 * BEAT * SR); t = tt(n)
-        bass = (np.sin(2 * np.pi * r * t) + 0.25 * np.sin(4 * np.pi * r * t)) * np.clip(t / 0.02, 0, 1) * np.exp(-t / 1.8)
-        put(bass, t0, 0.5, 0.20)
-        for k in (0, 2.5):                                              # soft kick
-            n = int(0.18 * SR); t = tt(n); f = 50 + 70 * np.exp(-t / 0.03)
-            put(np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t / 0.07), t0 + k * BEAT, 0.5, 0.30)
-        for k in (1, 3):                                                # rim
-            n = int(0.07 * SR); t = tt(n)
-            rim = (filt(rng.standard_normal(n), 'band', [1500, 4000]) * 0.5 + np.sin(2 * np.pi * 1800 * t)) * np.exp(-t / 0.018)
-            put(rim, t0 + k * BEAT, 0.55, 0.05)
-        for k in range(8):                                              # swung brushed hats
-            n = int(0.05 * SR); t = tt(n); sw = 0.58 if k % 2 else 0.0
-            hat = filt(rng.standard_normal(n), 'high', 6000) * np.exp(-t / 0.012)
-            put(hat, t0 + (k // 2 + (sw if k % 2 else 0)) * BEAT, 0.65, 0.035 if k % 2 else 0.05)
-    x = np.stack([L, R], 1)
-    return filt(x, 'low', 4200)
+# ---------------- music (original soft chords, kit/music.py)
+MUSIC_LUFS, DUCK_DB = -21.0, -9.0          # the music on its own where nobody talks, and its dip under the speech
+def music_track():
+    """intro from 0:00 (hook) to just into STEP 2, outro from "เสร็จแล้ว!" to the end, silent in between"""
+    card, step2 = TL.BY_ID['K1']['f0'] / FPS, TL.BY_ID['S2a']['f0'] / FPS
+    res = next(it for it in OI.items() if it['id'] == 'res_0')['f0'] / FPS; cta = TL.BY_ID['CTA']['f0'] / FPS
+    intro, outro = MU.render(card, step2, res, cta, N / SR)
+    x = np.zeros((N, 2)); x[:min(len(intro), N)] += intro[:N]
+    i = int(round(res * SR)); m = min(len(outro), N - i); x[i:i + m] += outro[:m]
+    return x * 10 ** ((MUSIC_LUFS - lufs(np.concatenate([intro, outro]))) / 20)
 
 # ---------------- SFX (original)
 def sfx_pop():
@@ -119,7 +92,7 @@ def sfx_click():
     return x
 def sfx_success():
     n = int(0.9 * SR); t = tt(n); y = np.zeros(n)
-    for f0, d in ((1046.5, 0.0), (1568.0, 0.11)):
+    for f0, d in ((1174.66, 0.0), (1760.0, 0.11)):          # D6 + A6
         i = int(d * SR); tt_ = t[: n - i]
         y[i:] += (np.sin(2 * np.pi * f0 * tt_) + 0.25 * np.sin(2 * np.pi * 3 * f0 * tt_)) * np.exp(-tt_ / 0.28) * np.clip(tt_ / 0.003, 0, 1)
     return y
@@ -137,10 +110,12 @@ def sfx_track():
         put(sfx_click(), (TL.out_frame(c, r0) + 6) / FPS, 10 ** (-26 / 20))
     return x
 
-def duck_curve(speech):
-    """gain (dB) for the bed: -6 dB while the voice talks, 60 ms attack, 450 ms release"""
-    g = np.where(speech, -6.0, 0.0); dec = 48; gd = g[::dec]; out = np.empty_like(gd); y = 0.0
-    aa, ar = np.exp(-1 / (0.06 * SR / dec)), np.exp(-1 / (0.45 * SR / dec))
+def duck_curve(speech, depth=DUCK_DB, att=0.12, rel=0.6, look=0.10):
+    """gain (dB) for the music: `depth` while the voice talks (from `look` s before each talking clip), smooth
+    attack / release"""
+    L = int(look * SR); sp = speech.copy(); sp[:-L] |= speech[L:]
+    g = np.where(sp, depth, 0.0); dec = 48; gd = g[::dec]; out = np.empty_like(gd); y = 0.0
+    aa, ar = np.exp(-1 / (att * SR / dec)), np.exp(-1 / (rel * SR / dec))
     for i, v in enumerate(gd): a = aa if v < y else ar; y = a * y + (1 - a) * v; out[i] = y
     return np.interp(np.arange(len(g)), np.arange(0, len(g), dec)[:len(out)], out)
 
@@ -152,9 +127,9 @@ if __name__ == '__main__':
     v, speech = voice_program()
     clean = finish(np.stack([v, v], 1)); write(os.path.join(W, 'mix_clean.wav'), clean)
     vn = np.stack([v, v], 1) * 10 ** ((-14.0 - lufs(np.stack([v, v], 1))) / 20)
-    bed = bgm(N); bed = bed * 10 ** ((-33.0 - lufs(bed)) / 20)                       # ~19 dB under the voice
-    t = tt(N); bed *= np.clip(t / 0.6, 0, 1)[:, None] * np.clip((t[-1] - t) / 1.8, 0, 1)[:, None]
-    bed *= 10 ** (duck_curve(speech) / 20)[:, None]
-    main = finish(vn + bed + sfx_track()); write(os.path.join(W, 'mix_main.wav'), main)
-    np.save(os.path.join(W, 'speech_mask.npy'), speech)
-    print(f'clean {lufs(clean):.1f} LUFS, main {lufs(main):.1f} LUFS; bed alone {lufs(bed):.1f} LUFS; duration {N / SR:.2f} s')
+    mus = music_track(); playing = np.abs(mus).max(1) > 1e-6
+    mus *= 10 ** (duck_curve(speech) / 20)[:, None]
+    main = finish(vn + mus + sfx_track()); write(os.path.join(W, 'mix_main.wav'), main)
+    np.save(os.path.join(W, 'speech_mask.npy'), speech); np.save(os.path.join(W, 'music_mask.npy'), playing)
+    print(f'clean {lufs(clean):.1f} LUFS, main {lufs(main):.1f} LUFS; music alone {lufs(mus[playing]):.1f} LUFS where it plays '
+          f'({playing.mean() * N / SR:.1f} s); duration {N / SR:.2f} s')
