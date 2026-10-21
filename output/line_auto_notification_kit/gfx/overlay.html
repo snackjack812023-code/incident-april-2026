@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+/* Prompt (SIL OFL 1.1): thai + latin subsets; emoji from the system Noto Color Emoji */
+@font-face{font-family:'PromptX';font-weight:600;src:url('fonts/prompt-thai-600-normal.woff2') format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC;}
+@font-face{font-family:'PromptX';font-weight:600;src:url('fonts/prompt-latin-600-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+2000-206F;}
+@font-face{font-family:'PromptX';font-weight:700;src:url('fonts/prompt-thai-700-normal.woff2') format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC;}
+@font-face{font-family:'PromptX';font-weight:700;src:url('fonts/prompt-latin-700-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+2000-206F;}
+@font-face{font-family:'PromptX';font-weight:800;src:url('fonts/prompt-thai-800-normal.woff2') format('woff2');unicode-range:U+0E01-0E5B,U+200C-200D,U+25CC;}
+@font-face{font-family:'PromptX';font-weight:800;src:url('fonts/prompt-latin-800-normal.woff2') format('woff2');unicode-range:U+0000-00FF,U+2000-206F;}
+html,body{margin:0;background:transparent;}
+body{font-family:'PromptX','Noto Color Emoji',sans-serif;}
+#stage{position:absolute;left:40px;top:40px;}
+.t{display:inline-block;white-space:nowrap;color:#fff;line-height:1.28;letter-spacing:0.2px;
+   text-shadow:0 2px 8px rgba(0,0,0,.35),0 0 1px rgba(0,0,0,.4);}
+.y{color:#FFD54A;}
+.c{color:#38E1F5;}
+.g{color:#2EE07A;}
+.em{color:#FFD54A;font-size:1.1em;text-shadow:0 0 18px rgba(255,213,74,.55),0 2px 8px rgba(0,0,0,.35);}
+.dim{color:rgba(255,255,255,.82);}
+.dot{color:#38E1F5;padding:0 .35em;}
+.arrow{display:inline-block;width:1.05em;height:.62em;vertical-align:.08em;margin:0 .25em;}
+.brand b{font-weight:800;}
+</style></head>
+<body><div id="stage"></div>
+<script>
+const ARROW = '<svg class="arrow" viewBox="0 0 42 24"><path d="M2 12h34M26 3l10 9-10 9" fill="none" stroke="#38E1F5" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+window.renderItem = (it) => {
+  const st = document.getElementById('stage'); st.innerHTML = '';
+  const d = document.createElement('div'); d.className = 't ' + (it.cls || '');
+  d.style.fontWeight = it.weight; d.innerHTML = it.html.replace('{ARROW}', ARROW); st.appendChild(d);
+  let size = it.size; d.style.fontSize = size + 'px';
+  while (d.getBoundingClientRect().width > it.maxw && size > 20) { size -= 1; d.style.fontSize = size + 'px'; }
+  const r = d.getBoundingClientRect();
+  return {x: r.x, y: r.y, w: r.width, h: r.height, size};
+};
+</script></body></html>

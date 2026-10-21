@@ -1,0 +1,117 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts.css">
+<style>
+:root{--cyan:#22D3EE;--blue:#2563EB;--navy:#0A1330;--green:#34D399;--orange:#FF9F1C}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;overflow:hidden}
+body{font-family:'PromptX',sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+#cv{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden}
+.blk{position:absolute;left:70px;width:900px;display:flex;flex-direction:column;align-items:center}
+.ln{white-space:nowrap;text-align:center;line-height:1.2;text-shadow:0 6px 26px rgba(2,8,32,.62),0 2px 4px rgba(2,8,32,.45);will-change:transform,opacity,filter}
+.h{font-weight:800}
+.sub{font-weight:600;color:rgba(255,255,255,.9)}
+.c{color:var(--cyan)} .g{color:var(--green)} .o{color:var(--orange)}
+#chips{display:flex;gap:14px;justify-content:center;margin-top:18px}
+.chip{display:flex;align-items:center;gap:10px;height:58px;padding:0 22px 0 16px;border-radius:29px;font-weight:600;font-size:30px;white-space:nowrap;
+  background:rgba(10,19,48,.55);border:2px solid rgba(255,255,255,.22);box-shadow:0 10px 28px rgba(0,5,28,.35)}
+.dot{width:18px;height:18px;border-radius:9px}
+#cardfx{position:absolute;left:70px;top:560px;width:900px;height:800px;border-radius:28px;overflow:hidden;transform-origin:50% 50%}
+.ring{position:absolute;border-radius:14px;border:4px solid var(--cyan);display:none}
+#s9{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.pill{display:flex;align-items:center;gap:18px;height:112px;padding:0 50px;border-radius:56px;font-weight:800;font-size:58px;white-space:nowrap;
+  background:linear-gradient(90deg,#FF9F1C,#FF6A3D);box-shadow:0 0 0 3px rgba(255,255,255,.30),0 18px 50px rgba(255,120,40,.45)}
+.line{display:inline-flex;align-items:center;justify-content:center;width:84px;height:46px;border-radius:12px;background:#06C755;color:#fff;font-weight:800;font-size:26px;letter-spacing:.5px}
+</style></head><body><div id="cv">
+ <div id="s1" class="blk"><div class="ln h" data-size="90">โรงงานยังตามงาน</div><div class="ln h" data-size="90">ด้วย <span class="o">Excel</span> อยู่ไหม?</div>
+   <div class="ln sub" data-size="44" style="margin-top:8px">ลองเปลี่ยนเป็นระบบติดตามการผลิต <span class="c">Real-Time</span></div></div>
+ <div id="s2" class="blk"><div class="ln h" data-size="92">เห็นสถานะการผลิต</div><div class="ln h" data-size="92"><span class="c">ทั้งโรงงาน</span>ในหน้าเดียว</div></div>
+ <div id="s3" class="blk"><div class="ln h" data-size="92">วางแผนการผลิตผ่าน</div><div class="ln h c" data-size="92">Production Calendar</div></div>
+ <div id="s4" class="blk"><div class="ln h" data-size="92">จัดการ <span class="c">PO</span></div><div class="ln h" data-size="92">และติดตาม <span class="g">Progress</span></div></div>
+ <div id="s5" class="blk"><div class="ln h" data-size="92">ติดตามทุก <span class="c">Job</span></div><div class="ln h" data-size="92">ตั้งแต่เริ่มผลิตจนเสร็จ</div></div>
+ <div id="s6" class="blk"><div class="ln h" data-size="92">ติดตามงานแยกตาม<span class="c">แต่ละแผนก</span></div>
+   <div id="chips" class="ln"><div class="chip"><span class="dot" style="background:#94A3B8"></span>Waiting</div><div class="chip"><span class="dot" style="background:#06B6D4"></span>In Progress</div>
+   <div class="chip"><span class="dot" style="background:#F59E0B"></span>Paused</div><div class="chip"><span class="dot" style="background:#F43F5E"></span>Delayed</div></div></div>
+ <div id="s7" class="blk"><div class="ln h" data-size="92">ตรวจสอบ<span class="c">ความพร้อม</span></div><div class="ln h" data-size="92">ก่อนจัดส่ง</div></div>
+ <div id="s8" class="blk"><div class="ln h" data-size="92">สรุปรายงาน<span class="c">อัตโนมัติ</span></div><div class="ln h" data-size="92">พร้อม <span class="g">Export</span></div></div>
+ <div id="s9">
+  <div id="t9" class="blk" style="top:0"><div class="ln h" id="t9a" data-size="96">Factory Production</div><div class="ln h c" id="t9b" data-size="132" style="margin-top:-6px">Tracking</div>
+    <div class="ln sub" id="t9c" data-size="46" style="margin-top:10px">Google Sheets + Google Apps Script</div></div>
+  <div id="cta" class="blk" style="top:820px"><div class="ln h" id="cta1" data-size="84">อยากได้ระบบแบบนี้?</div>
+    <div class="ln" id="cta2" style="margin-top:26px"><div class="pill">Comment: FACTORY</div></div></div>
+  <div id="foot" class="blk" style="top:1196px"><div class="ln h" id="ft1" data-size="60">Smart<span class="c">Flow</span></div>
+    <div class="ln sub" id="ft2" style="margin-top:8px;display:flex;align-items:center;gap:14px;font-size:42px"><span class="line">LINE</span>@smartflow</div></div>
+ </div>
+</div>
+<div id="cardfx"></div>
+<script>
+const SP=window.__SPEC, FR=SP.frames, CARD=SP.CARD;
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const E={out3:p=>1-Math.pow(1-p,3),io:p=>.5-.5*Math.cos(Math.PI*p),outBack:p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2)}};
+const prog=(f,f0,len)=>clamp((f-f0)/len);
+const SC={}; SP.scenes.forEach(s=>SC[s[0]]=[s[2],s[3]]);
+const COL={cyan:'34,211,238',green:'52,211,153',orange:'255,159,28'};
+function fit(){ document.querySelectorAll('[data-size]').forEach(el=>{let s=+el.dataset.size; el.style.fontSize=s+'px';
+  const w=()=>{const r=document.createRange();r.selectNodeContents(el);return r.getBoundingClientRect().width}; let g=0; while(w()>880&&g++<120){s-=1;el.style.fontSize=s+'px'} el.dataset.fit=s;}); }
+// text blocks sit just above the card (bottom at y=520); s9 blocks are positioned by script
+function placeBlocks(){ for(const k of ['s1','s2','s3','s4','s5','s6','s7','s8']){const b=$(k); b.style.top=(520-b.getBoundingClientRect().height)+'px';} }
+function setLn(el,y,o,blur=0,s=1){el.style.transform=`translateY(${y}px) scale(${s})`;el.style.opacity=o;el.style.filter=blur>0.05?`blur(${blur}px)`:'none';}
+// generic scene text: lines rise in (stagger), leave quickly just before the cut
+function sceneText(k,f){
+  const [f0,f1]=SC[k], el=$(k); const vis=f>=f0&&f<f1; el.style.display=vis?'flex':'none'; if(!vis) return;
+  const lines=[...el.children]; const first=k==='s1';
+  lines.forEach((ln,i)=>{
+    let p=first&&i<2?1:E.out3(prog(f,f0+1+i*3,8));
+    let y=(1-p)*34, o=p, b=(1-p)*8, s=first&&i<2?1+0.05*(1-E.out3(prog(f,0,10))):1;
+    if(k!=='s9'&&f>=f1-3&&f1<SP.N-1){const q=prog(f,f1-3,3);o*=1-q;y-=14*q;}
+    setLn(ln,y,o,b,s);
+  });
+}
+function rectAt(f,r){const c=FR[f].cam, k=CARD.w/c[2]; return [(r[0]-c[0])*k,(r[1]-c[1])*k,r[2]*k,r[3]*k];}
+const rings={};
+function focus(fo,f){
+  let el=rings[fo.scene]; if(!el){el=document.createElement('div');el.className='ring';$('cardfx').appendChild(el);rings[fo.scene]=el;}
+  const T=fo.targets, on=T[0][0]-2, off=fo.off; if(f<on||f>=off||FR[f].scene!==fo.scene){el.style.display='none';return}
+  // current rect: glide to the next target when the camera holds; when the camera whips between targets the ring
+  // fades out at the old target and back in at the new one (a sharp ring sliding over a motion-blurred card looks detached)
+  let r=rectAt(f,T[0][1]), pop=0, vis=1;
+  const spd=g=>{const c=FR[g].cam, d=FR[g-1].cam; return Math.abs(c[0]-d[0])+Math.abs(c[1]-d[1]);};
+  for(let i=1;i<T.length;i++){const p0=T[i-1][0], on_i=T[i][0], len=Math.min(5,on_i-p0-2);
+    let m0=-1; for(let g=Math.max(p0+1,SC[fo.scene][0]+9);g<=on_i;g++){ if(spd(g)>6){m0=g;break;} }   // first frame of a camera whip (after the cut's settle), if any
+    if(f>=on_i){r=rectAt(f,T[i][1]); vis=1;}
+    else if(m0>=0&&f>=m0){
+      if(f<m0+3){r=rectAt(f,T[i-1][1]); vis=1-(f-m0+1)/3;}
+      else if(f>=on_i-3){r=rectAt(f,T[i][1]); vis=(f-(on_i-3)+1)/3;}
+      else {r=rectAt(f,T[i][1]); vis=0;}
+    } else if(m0<0&&f>=on_i-len){const p=E.out3((f-(on_i-len))/len), A=rectAt(f,T[i-1][1]), B=rectAt(f,T[i][1]); r=A.map((v,j)=>v+(B[j]-v)*p);}
+  }
+  for(const t of T){const q=prog(f,t[0],8); if(q>0&&q<1) pop=Math.max(pop,Math.sin(q*Math.PI));}
+  const pad=9, col=COL[fo.color], fin=E.out3(prog(f,on,6)), fout=1-prog(f,off-6,6), a=fin*fout*clamp(vis);
+  el.style.display='block'; el.style.left=(r[0]-pad)+'px'; el.style.top=(r[1]-pad)+'px'; el.style.width=(r[2]+2*pad)+'px'; el.style.height=(r[3]+2*pad)+'px';
+  el.style.borderColor=`rgba(${col},${a})`;
+  el.style.boxShadow=`0 0 0 4000px rgba(5,12,34,${fo.dim*a}), 0 0 26px 4px rgba(${col},${0.55*a}), inset 0 0 14px rgba(${col},${0.25*a})`;
+  el.style.transform=`scale(${1+0.05*pop})`;
+}
+function s9(f){
+  const on=f>=SC.s9[0]; $('s9').style.display=on?'block':'none'; if(!on) return;
+  const f0=SC.s9[0], mv=E.io(prog(f,f0+28,14));        // title rises to the top zone when the CTA comes in
+  const a=E.out3(prog(f,f0+4,9)), b=E.outBack(prog(f,f0+8,12)), c=E.out3(prog(f,f0+14,9));
+  const t9=$('t9'), H=t9.getBoundingClientRect().height/(1-0.18*mv||1);
+  const yCenter=930-H/2, yTop=262; t9.style.top=(yCenter+(yTop-yCenter)*mv)+'px'; t9.style.transform=`scale(${1-0.18*mv})`; t9.style.transformOrigin='50% 0';
+  setLn($('t9a'),(1-a)*30,a,(1-a)*8); setLn($('t9b'),0,clamp(b*1.4),0,0.7+0.3*b); setLn($('t9c'),(1-c)*20,c,(1-c)*6);
+  const d=E.out3(prog(f,f0+32,9)), e=E.outBack(prog(f,f0+38,12));
+  setLn($('cta1'),(1-d)*30,d,(1-d)*8); setLn($('cta2'),0,clamp(e*1.5),0,0.6+0.4*e);
+  const g=E.out3(prog(f,f0+18,10)); setLn($('ft1'),(1-g)*18,g); setLn($('ft2'),(1-g)*18,g*0.98);
+}
+function renderAt(f){
+  const s=FR[f].card[0]; $('cardfx').style.transform=`scale(${s})`;
+  for(const k of ['s1','s2','s3','s4','s5','s6','s7','s8']) sceneText(k,f);
+  for(const fo of SP.focus) focus(fo,f);
+  s9(f);
+}
+window.renderAt=renderAt;
+(async()=>{
+  const ws=['600','700','800'];
+  await Promise.all(ws.flatMap(w=>[document.fonts.load(w+' 40px PromptX','กขคงจ'),document.fonts.load(w+' 40px PromptX','AaGg?!')]));
+  await document.fonts.ready; fit(); placeBlocks(); window.ready=true;
+})();
+</script></body></html>

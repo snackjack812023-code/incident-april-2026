@@ -1,0 +1,123 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts.css">
+<style>
+:root{--g:#2BE35F;--g2:#06C755;--navy:#06102A}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;overflow:hidden}
+body{font-family:'PromptX','Noto Color Emoji',sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+#cv{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden}
+.scrim{position:absolute;left:0;top:0;width:1080px;height:820px;background:linear-gradient(180deg,rgba(4,10,28,.86) 0%,rgba(4,10,28,.62) 50%,rgba(4,10,28,0) 100%)}
+.scrimb{position:absolute;left:0;top:1120px;width:1080px;height:800px;background:linear-gradient(0deg,rgba(4,10,28,.0) 0%,rgba(4,10,28,.55) 45%,rgba(4,10,28,0) 100%)}
+.blk{position:absolute;display:flex;flex-direction:column;align-items:center}
+.ttl{font-style:italic;font-weight:900;white-space:nowrap;line-height:1.12;letter-spacing:-1px;padding:0 14px}
+.gr{background:linear-gradient(180deg,#9DFFA9 0%,#2BE35F 45%,#12B83F 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 2px rgba(0,30,10,.9)) drop-shadow(0 0 20px rgba(43,227,95,.5)) drop-shadow(0 8px 16px rgba(0,8,20,.85))}
+.wh{background:linear-gradient(180deg,#FFFFFF 0%,#EEF2F8 55%,#C9D1DE 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 2px rgba(0,8,20,.9)) drop-shadow(0 8px 16px rgba(0,8,20,.85))}
+.chip{display:flex;align-items:center;gap:16px;height:84px;padding:0 34px;border-radius:20px;font-weight:700;font-size:38px;white-space:nowrap;
+  background:rgba(6,16,42,.82);border:2.5px solid rgba(43,227,95,.55);box-shadow:0 0 28px rgba(43,227,95,.25),0 14px 40px rgba(0,5,20,.5)}
+.g{color:var(--g)}
+.cap{display:flex;align-items:center;gap:20px;height:108px;padding:0 40px 0 22px;border-radius:54px;font-weight:700;font-size:48px;white-space:nowrap;
+  background:rgba(6,16,42,.86);border:2.5px solid rgba(43,227,95,.6);box-shadow:0 0 30px rgba(43,227,95,.28),0 16px 44px rgba(0,5,20,.55)}
+.num{width:72px;height:72px;border-radius:36px;display:flex;align-items:center;justify-content:center;font-weight:900;font-style:italic;font-size:44px;
+  background:linear-gradient(180deg,#5CF07F,#13B843);color:#03210C;box-shadow:0 0 18px rgba(43,227,95,.6)}
+.ring{position:absolute;border-radius:12px;border:5px solid var(--g);display:none}
+.rip{position:absolute;border-radius:50%;border:6px solid #fff;display:none}
+.new{position:absolute;display:none;align-items:center;gap:10px;height:62px;padding:0 24px 0 16px;border-radius:31px;font-weight:800;font-size:32px;white-space:nowrap;
+  background:linear-gradient(90deg,#13B843,#2BE35F);color:#03210C;box-shadow:0 0 0 3px rgba(255,255,255,.75),0 12px 30px rgba(0,30,10,.45)}
+.pill{display:flex;align-items:center;gap:16px;height:110px;padding:0 46px;border-radius:55px;font-weight:800;font-size:54px;white-space:nowrap;color:#fff;
+  background:linear-gradient(90deg,#06C755,#2BE35F);box-shadow:0 0 0 3px rgba(255,255,255,.35),0 0 40px rgba(43,227,95,.5),0 18px 50px rgba(0,30,10,.45)}
+.tags{display:flex;gap:16px;margin-top:26px}
+.tag{height:60px;padding:0 24px;border-radius:30px;display:flex;align-items:center;font-weight:700;font-size:32px;background:rgba(255,255,255,.10);border:2px solid rgba(255,255,255,.28)}
+</style></head><body><div id="cv">
+ <div class="scrim" id="scrim"></div><div class="scrimb" id="scrimb"></div>
+ <div id="hook" class="blk" style="left:40px;width:1000px;top:150px">
+   <div class="ttl" id="h1" data-size="124" data-max="960"><span class="wh">ระบบ</span><span class="gr">แจ้งเตือนงาน</span></div>
+   <div class="ttl" id="h2" data-size="156" data-max="960"><span class="wh">ทางไลน์</span></div>
+   <div class="chip" id="h3" data-size="38" data-max="880" style="margin-top:22px">💻 <span style="opacity:.8">➜</span> 📱 แจ้งเตือนจากคอมพิวเตอร์ ไปยัง <span class="g">LINE</span> บนมือถือ</div>
+ </div>
+ <div id="cap" class="blk" style="left:40px;width:920px;top:1300px"></div>
+ <div id="cta" class="blk" style="left:40px;width:940px;top:640px">
+   <div class="ttl" id="c1" data-size="96" data-max="900"><span class="wh">อยากได้ระบบแบบนี้?</span></div>
+   <div id="c2" style="margin-top:34px"><div class="pill">💬 ทัก LINE: @smartflow</div></div>
+   <div class="tags" id="c3"><div class="tag">อัตโนมัติ</div><div class="tag">รวดเร็ว</div><div class="tag">แม่นยำ</div></div>
+   <div id="c4" style="margin-top:30px;font-weight:700;font-size:40px;opacity:.92">Smart<span class="g">Flow</span> Systems</div>
+ </div>
+</div>
+<div id="fx" style="position:absolute;left:0;top:0;width:1080px;height:1920px"></div>
+<script>
+const SP=window.__SPEC, FR=SP.frames;
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const E={out3:p=>1-Math.pow(1-p,3),io:p=>.5-.5*Math.cos(Math.PI*p),outBack:p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2)}};
+const prog=(f,f0,len)=>clamp((f-f0)/len);
+const SH={}; SP.shots.forEach(s=>SH[s.key]=[s.f0,s.f1]);
+function fit(){document.querySelectorAll('[data-size]').forEach(el=>{let s=+el.dataset.size; el.style.fontSize=s+'px'; const mx=+el.dataset.max||900;
+  const w=()=>{const r=document.createRange();r.selectNodeContents(el);return r.getBoundingClientRect().width}; let g=0; while(w()>mx&&g++<120){s-=1;el.style.fontSize=s+'px'} el.dataset.fit=s;});}
+function setT(el,y,o,s=1,blur=0){el.style.transform=`translateY(${y}px) scale(${s})`;el.style.opacity=o;el.style.filter=blur>0.05?`blur(${blur}px)`:'';}
+// source px -> output px
+function map(f,x,y){const c=FR[f].cam, k=1080/c[2]; return [(x-c[0])*k,(y-c[1])*k,k];}
+const CAPS=[ // [f0, f1, number, html]
+  [61,120,'1','กดปุ่ม <span class="g">“ส่งแจ้งเตือน LINE”</span>'],
+  [121,195,'2','เช็กข้อความ แล้วกด <span class="g">“ยืนยันส่ง”</span>'],
+  [196,240,'3','ส่งเรียบร้อย <span class="g">✓</span> ในคลิกเดียว'],
+  [241,369,'🔔','เด้งเข้า <span class="g">LINE กลุ่ม</span> ทันที'],
+];
+let capKey=null;
+function caption(f){
+  const c=CAPS.find(c=>f>=c[0]&&f<c[1]); const el=$('cap');
+  if(!c){el.style.display='none';capKey=null;return}
+  if(capKey!==c[0]){el.innerHTML=`<div class="cap"><span class="num">${c[2]}</span><span>${c[3]}</span></div>`;capKey=c[0];
+    const box=el.firstElementChild; let fs=48; box.style.fontSize=fs+'px'; while(box.getBoundingClientRect().width>880&&fs>30){fs-=1;box.style.fontSize=fs+'px';}}
+  el.style.display='flex';
+  const p=E.outBack(prog(f,c[0],10)), o=clamp(prog(f,c[0],5)), out=1-prog(f,c[1]-3,3);
+  setT(el,(1-clamp(p))*30,o*out,0.92+0.08*p);
+}
+const rings={};
+function ring(R,f){
+  let el=rings[R.key]; if(!el){el=document.createElement('div');el.className='ring';$('fx').appendChild(el);rings[R.key]=el;}
+  if(f<R.on||f>=R.off||!FR[f].cam){el.style.display='none';return}
+  let [x,y,w,h]=R.rect; if(R.track){x+=FR[f].trk[0];y+=FR[f].trk[1];}
+  const [a,b,k]=map(f,x,y), pad=10, pin=E.out3(prog(f,R.on,7)), pout=1-prog(f,R.off-5,5), op=pin*pout;
+  const pulse=1+0.015*Math.sin((f-R.on)/30*2*Math.PI*1.6);
+  el.style.display='block'; el.style.left=(a-pad)+'px'; el.style.top=(b-pad)+'px'; el.style.width=(w*k+2*pad)+'px'; el.style.height=(h*k+2*pad)+'px';
+  el.style.borderColor=`rgba(43,227,95,${op})`;
+  el.style.boxShadow=`0 0 0 4000px rgba(4,10,28,${0.30*op}), 0 0 30px 6px rgba(43,227,95,${0.6*op}), inset 0 0 16px rgba(43,227,95,${0.25*op})`;
+  el.style.transform=`scale(${(1.18-0.18*pin)*pulse})`; el.style.borderRadius=Math.max(10,8*k*0.6)+'px';
+}
+const rips={};
+function ripple(R,i,f){
+  for(const [j,d,sz] of [[0,0,1],[1,4,1.4]]){const key=i+'_'+j; let el=rips[key]; if(!el){el=document.createElement('div');el.className='rip';$('fx').appendChild(el);rips[key]=el;}
+    const q=prog(f,R.f+d,16); if(q<=0||q>=1||!FR[f].cam||FR[f].shot!==R.shot){el.style.display='none';continue}
+    const [x,y]=map(f,R.x,R.y), r=(16+90*E.out3(q))*sz; el.style.display='block'; el.style.left=(x-r)+'px'; el.style.top=(y-r)+'px'; el.style.width=2*r+'px'; el.style.height=2*r+'px';
+    el.style.opacity=(1-q)*.95; el.style.borderWidth=(6*(1-q)+1.5)+'px'; el.style.borderColor=j?'rgba(43,227,95,.95)':'rgba(255,255,255,.95)';}
+}
+let newEl=null;
+function newBadge(f){
+  if(!newEl){newEl=document.createElement('div');newEl.className='new';newEl.innerHTML='🔔 ข้อความใหม่';$('fx').appendChild(newEl);}
+  const on=SP.cues.ding, off=SH.E2[1]; if(f<on||f>=off||!FR[f].cam){newEl.style.display='none';return}
+  const [x,y]=map(f,157+FR[f].trk[0]+267,290+FR[f].trk[1]); const p=E.outBack(prog(f,on,12)), o=clamp(prog(f,on,4))*(1-prog(f,off-5,5));
+  newEl.style.display='flex'; const w=newEl.getBoundingClientRect().width/Math.max(0.01,clamp(p,0.01,2));
+  newEl.style.left=Math.min(1000-w, x-w*0.75)+'px'; newEl.style.top=(y-80)+'px'; newEl.style.opacity=o; newEl.style.transform=`scale(${clamp(p,0,1.2)})`; newEl.style.transformOrigin='70% 100%';
+}
+function renderAt(f){
+  // hook
+  const hk=f<SH.A[1]; $('hook').style.display=hk?'flex':'none'; $('scrim').style.opacity=hk?1-prog(f,SH.A[1]-4,4):0;
+  if(hk){const a=E.outBack(prog(f,0,10)), b=E.outBack(prog(f,3,10)), c=E.out3(prog(f,8,10)), out=1-prog(f,SH.A[1]-3,3);
+    setT($('h1'),0,(0.55+0.45*clamp(prog(f,0,4)))*out,0.86+0.14*a); setT($('h2'),0,clamp(prog(f,2,5))*out,0.8+0.2*b); setT($('h3'),(1-c)*24,c*out);}
+  // step captions + bottom scrim
+  caption(f); $('scrimb').style.opacity=(f>=SH.B[0]&&f<SH.E2[1])?1:0;
+  for(const R of SP.rings) ring(R,f);
+  SP.ripples.forEach((R,i)=>ripple(R,i,f));
+  newBadge(f);
+  // CTA
+  const ct=f>=SH.F[0]&&f<SH.F[1]; $('cta').style.display=ct?'flex':'none';
+  if(ct){const f0=SH.F[0]+3, a=E.outBack(prog(f,f0,11)), b=E.outBack(prog(f,f0+6,12)), c=E.out3(prog(f,f0+12,10)), d=E.out3(prog(f,f0+16,10)), out=1-prog(f,SH.F[1]-3,3);
+    setT($('c1'),0,clamp(prog(f,f0,5))*out,0.85+0.15*a); setT($('c2'),0,clamp(prog(f,f0+6,5))*out,0.7+0.3*b); setT($('c3'),(1-c)*20,c*out); setT($('c4'),(1-d)*20,d*out);}
+}
+window.renderAt=renderAt;
+(async()=>{
+  const fs=[['normal','700'],['normal','800'],['italic','800'],['italic','900']];
+  await Promise.all(fs.flatMap(([st,w])=>[document.fonts.load(`${st} ${w} 40px PromptX`,'กขคงจ'),document.fonts.load(`${st} ${w} 40px PromptX`,'AaGg?!')]));
+  await document.fonts.ready; fit(); window.ready=true;
+})();
+</script></body></html>

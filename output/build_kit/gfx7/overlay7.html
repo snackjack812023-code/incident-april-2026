@@ -1,0 +1,142 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="fonts.css">
+<style>
+:root{--cyan:#22D3EE;--blue:#2563EB;--navy:#0A1330;--yellow:#FFD60A;--orange:#FF9F1C;}
+*{box-sizing:border-box}
+html,body{margin:0;background:transparent;overflow:hidden}
+body{font-family:'PromptX','Noto Color Emoji',sans-serif;color:#fff;-webkit-font-smoothing:antialiased}
+#cv{position:absolute;left:0;top:0;width:1080px;height:1920px;overflow:hidden}
+.abs{position:absolute}
+.txt{position:absolute;left:0;width:1080px;text-align:center;white-space:nowrap;line-height:1.16;text-shadow:0 5px 26px rgba(2,8,32,.60),0 1px 3px rgba(2,8,32,.45)}
+.h1{font-weight:800}
+.cy{color:var(--cyan)}
+.mark{position:relative;display:inline-block}
+.mark::after{content:"";position:absolute;left:2%;right:2%;bottom:-2px;height:12px;border-radius:7px;background:var(--yellow);transform-origin:left center;transform:scaleX(var(--mk,0));opacity:.95;box-shadow:0 0 22px rgba(255,214,10,.45)}
+#steps{position:absolute;left:0;width:1080px;display:flex;justify-content:center;align-items:center;gap:14px}
+.pill{display:flex;align-items:center;gap:14px;height:90px;padding:0 30px 0 14px;border-radius:45px;font-weight:600;font-size:44px;background:rgba(255,255,255,.08);border:2.5px solid rgba(255,255,255,.26);color:rgba(255,255,255,.62);white-space:nowrap}
+.pill .n{width:60px;height:60px;border-radius:30px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:38px;background:rgba(255,255,255,.18);color:rgba(255,255,255,.8)}
+.pill.on{background:linear-gradient(90deg,rgba(37,99,235,.55),rgba(34,211,238,.38));border-color:var(--cyan);color:#fff;box-shadow:0 0 34px rgba(34,211,238,.35)}
+.pill.on .n{background:var(--cyan);color:var(--navy)}
+.pill.done .n{background:rgba(34,211,238,.35);color:#fff}
+.arr{width:34px;height:34px;opacity:.5}
+.cap{position:absolute;left:0;width:1080px;display:flex;justify-content:center}
+.cap>div{display:flex;align-items:center;gap:18px;height:100px;padding:0 44px 0 28px;border-radius:50px;font-weight:700;font-size:54px;background:rgba(8,18,52,.62);border:2.5px solid rgba(255,255,255,.22);white-space:nowrap;box-shadow:0 14px 40px rgba(0,5,30,.45)}
+.ck{width:62px;height:62px;border-radius:31px;background:var(--cyan);display:flex;align-items:center;justify-content:center}
+.act{position:absolute;left:0;width:1080px;display:flex;justify-content:center}
+.act>div{height:112px;display:flex;align-items:center;gap:22px;padding:0 54px;border-radius:56px;font-weight:800;font-size:62px;white-space:nowrap;background:linear-gradient(90deg,#2563EB,#06B6D4);box-shadow:0 0 0 3px rgba(255,255,255,.28),0 18px 50px rgba(6,182,212,.45)}
+#cardfx{position:absolute;left:40px;top:560px;width:1000px;height:700px;border-radius:30px;overflow:hidden}
+#paperfx{position:absolute;left:160px;top:546px;width:760px;height:817px;border-radius:14px;overflow:hidden}
+.ring{position:absolute;border:4.5px solid var(--yellow);border-radius:14px;box-shadow:0 0 0 7px rgba(255,214,10,.16),0 0 30px 4px rgba(255,214,10,.55)}
+.ring.cy2{border-color:var(--cyan);box-shadow:0 0 0 7px rgba(34,211,238,.16),0 0 30px 4px rgba(34,211,238,.6)}
+.ripple{position:absolute;border-radius:50%;border:6px solid var(--orange);background:rgba(255,159,28,.22)}
+#cursor{position:absolute;left:0;top:0;width:0;height:0;display:none}
+#cursor svg{position:absolute;overflow:visible;filter:drop-shadow(0 3px 4px rgba(0,0,0,.38))}
+</style></head><body><div id="cv">
+ <div id="s1" class="abs" style="left:0;top:0;width:1080px;height:560px">
+  <div class="txt h1" id="s1a" data-size="128" style="top:196px">ทำใบเสนอราคา</div>
+  <div class="txt h1 cy" id="s1b" data-size="108" style="top:352px">ยัง<span class="mark" id="mk">พิมพ์เอง</span>อยู่เหรอ? 😅</div>
+ </div>
+ <div id="s2" class="abs" style="left:0;top:0;width:1080px;height:1920px">
+  <div id="steps" style="top:296px">
+   <div class="pill" id="p0"><span class="n">1</span>ลูกค้า</div>
+   <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+   <div class="pill" id="p1"><span class="n">2</span>สินค้า/บริการ</div>
+   <svg class="arr" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+   <div class="pill" id="p2"><span class="n">3</span>ราคา</div>
+  </div>
+  <div class="cap" id="cap2" style="top:1296px"><div><span class="ck"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#0A1330" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>กรอกข้อมูลครั้งเดียว</div></div>
+ </div>
+ <div id="s3" class="abs" style="left:0;top:0;width:1080px;height:1920px">
+  <div class="act" id="act3" style="top:292px"><div><svg width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V11m0-1.5a1.5 1.5 0 0 1 3 0V12m0-1a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-1.5a6 6 0 0 1-4.7-2.3L4 14.5a1.5 1.5 0 0 1 2.3-1.9L9 15"/></svg>กดสร้างใบเสนอราคา</div></div>
+ </div>
+ <div id="s4" class="abs" style="left:0;top:0;width:1080px;height:1920px">
+  <div class="txt h1" id="s4a" data-size="156" style="top:186px">เสร็จแล้ว! 🔥</div>
+  <div class="txt cy" id="s4b" data-size="68" style="top:418px;font-weight:700">ไม่ต้องจัดหน้าเอกสารเอง</div>
+ </div>
+ <div id="s5" class="abs" style="left:0;top:0;width:1080px;height:1920px">
+  <div class="txt h1" id="s5a" data-size="120" style="top:186px">Google Apps Script</div>
+  <div class="txt h1 cy" id="s5b" data-size="124" style="top:336px">ทำได้แล้วรู้ยัง?</div>
+  <div class="abs" id="s5c" style="left:0;top:1394px;width:1080px;text-align:center">
+    <div id="s5line" style="width:150px;height:7px;border-radius:4px;margin:0 auto 18px;background:linear-gradient(90deg,#2563EB,#22D3EE)"></div>
+    <div id="s5brand" data-size="76" style="font-weight:700;white-space:nowrap;letter-spacing:.5px;text-shadow:0 5px 26px rgba(2,8,32,.6)">SmartFlow <span class="cy">Systems</span></div>
+  </div>
+ </div>
+</div>
+<div id="cardfx"><div id="cursor">
+  <svg id="cur-arrow" width="46" height="46" viewBox="0 0 24 24" style="left:-5.75px;top:-3.83px"><path d="M3 2v17.6l4.6-4.3 3.1 6.9 3-1.3-3-6.8h6.5z" fill="#0b0f1a" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+  <svg id="cur-ibeam" width="40" height="40" viewBox="0 0 24 24" style="left:-20px;top:-20px"><g fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5c1.6 0 2.8.4 3.5 1.3.7-.9 1.9-1.3 3.5-1.3M12 4.8v14.4M8.5 20.5c1.6 0 2.8-.4 3.5-1.3.7.9 1.9 1.3 3.5 1.3" stroke="#fff" stroke-width="4"/><path d="M8.5 3.5c1.6 0 2.8.4 3.5 1.3.7-.9 1.9-1.3 3.5-1.3M12 4.8v14.4M8.5 20.5c1.6 0 2.8-.4 3.5-1.3.7.9 1.9 1.3 3.5 1.3" stroke="#0b0f1a" stroke-width="1.7"/></g></svg>
+  <svg id="cur-hand" width="50" height="50" viewBox="0 0 32 32" style="left:-18.75px;top:-5.47px"><path d="M12 3.5c1.4 0 2.5 1.1 2.5 2.5v7.2c.5-.4 1.1-.6 1.8-.6 1.1 0 2 .6 2.4 1.5.5-.4 1.1-.6 1.8-.6 1.2 0 2.2.8 2.5 1.9.4-.2.9-.3 1.3-.3 1.5 0 2.7 1.2 2.7 2.7v5.2c0 4.3-3.5 7.8-7.8 7.8h-3.2c-2.4 0-4.6-1.1-6.1-3l-5.2-6.6c-.8-1-.6-2.5.4-3.3 1-.8 2.4-.6 3.2.3l1.7 1.9V6c0-1.4 1.1-2.5 2.5-2.5z" fill="#fff" stroke="#0b0f1a" stroke-width="1.6" stroke-linejoin="round"/><path d="M14.5 13.2v5M18.7 14.5v4M23 15.9v3" stroke="#0b0f1a" stroke-width="1.3" stroke-linecap="round"/></svg>
+</div></div>
+<div id="paperfx"></div>
+<script>
+const SP=window.__SPEC, FR=SP.frames;
+const $=id=>document.getElementById(id);
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const E={out3:p=>1-Math.pow(1-p,3),outBack:p=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(p-1,3)+c1*Math.pow(p-1,2)},io:p=>.5-.5*Math.cos(Math.PI*p)};
+const prog=(f,f0,len)=>clamp((f-f0)/len);
+const inS=(f,k)=>f>=SP.scene[k][0]&&f<SP.scene[k][1];
+function fit(){ document.querySelectorAll('[data-size]').forEach(el=>{let s=+el.dataset.size; el.style.fontSize=s+'px'; const maxW=el.dataset.max?+el.dataset.max:960;
+  const w=()=>{const r=document.createRange();r.selectNodeContents(el);return r.getBoundingClientRect().width}; let g=0; while(w()>maxW&&g++<80){s-=2;el.style.fontSize=s+'px'} el.dataset.fit=s;});
+  const st=$('steps'); const w=()=>{const kids=[...st.children];const a=kids[0].getBoundingClientRect().left,b=kids[kids.length-1].getBoundingClientRect().right;return b-a}; let g=0; let fs=44; while(w()>960&&g++<30){fs-=1;document.querySelectorAll('.pill').forEach(p=>p.style.fontSize=fs+'px')} st.dataset.fit=fs;
+}
+function setT(el,y,s=1,o=1){el.style.transform=`translateY(${y}px) scale(${s})`;el.style.opacity=o;}
+// source px -> fx-container px at frame f (plate A: screenshot card 1000 wide, plate B: paper 760 wide)
+function mapS(f,u,v){const fr=FR[f], c=fr.cam, s=(fr.plate==='A'?1000:760)/c.w; return [(u-c.u)*s,(v-c.v)*s,s];}
+const rings={};
+function ring(R,f){
+  let el=rings[R.key]; if(!el){el=document.createElement('div');el.className='ring '+(R.cls||'');$(R.plate==='A'?'cardfx':'paperfx').appendChild(el);rings[R.key]=el;}
+  const vis=f>=R.on&&f<R.off&&FR[f].plate===R.plate; if(!vis){el.style.display='none';return}
+  el.style.display='block'; const [x,y,w,h]=R.rect, pad=R.pad||8; const [a,b,s]=mapS(f,x,y);
+  const pin=E.out3(prog(f,R.on,7)), pout=1-prog(f,R.off-6,6);
+  let sc=1.22-0.22*pin; const op=pin*Math.min(1,pout);
+  sc*=1+0.014*Math.sin((f-R.on)/30*2*Math.PI*1.7);
+  for(const fa of (R.flashAt||[])){const q=prog(f,fa,10); if(q>0&&q<1) sc*=1+0.06*Math.sin(q*Math.PI);}
+  el.style.left=(a-pad)+'px';el.style.top=(b-pad)+'px';el.style.width=(w*s+2*pad)+'px';el.style.height=(h*s+2*pad)+'px';
+  el.style.borderRadius=Math.max(10,14*s*0.6)+'px'; el.style.transform=`scale(${sc})`; el.style.opacity=op;
+}
+const rips={};
+function ripple(R,f){
+  let el=rips[R.key]; if(!el){el=document.createElement('div');el.className='ripple';$('cardfx').appendChild(el);rips[R.key]=el;}
+  const q=prog(f,R.f+(R.delay||0),16); if(q<=0||q>=1||FR[f].plate!=='A'){el.style.display='none';return}
+  const [x,y]=mapS(f,R.x,R.y); const r=(18+80*E.out3(q))*(R.size||1); el.style.display='block';
+  el.style.left=(x-r)+'px';el.style.top=(y-r)+'px';el.style.width=2*r+'px';el.style.height=2*r+'px';el.style.opacity=(1-q)*.95;el.style.borderWidth=(6*(1-q)+1.5)+'px';
+}
+function cursor(f){
+  const fr=FR[f], el=$('cursor'); if(fr.plate!=='A'){el.style.display='none';return}
+  const c=fr.cursor; const [x,y]=mapS(f,c.x,c.y); el.style.display='block';
+  el.style.transform=`translate(${x}px,${y}px) scale(${c.pressed?0.86:1})`;
+  for(const t of ['arrow','ibeam','hand']) $('cur-'+t).style.display=c.type===t?'block':'none';
+}
+function renderAt(f){
+  for(const k of [1,2,3,4,5]) $('s'+k).style.display=inS(f,k)?'block':'none';
+  const fr=FR[f]; $('paperfx').style.top=(546+(fr.dy||0))+'px';
+  // S1 hook (fully readable from frame 0)
+  if(inS(f,1)){ setT($('s1a'),0,1,1); setT($('s1b'),0,1,1); $('mk').style.setProperty('--mk',E.out3(prog(f,8,16))); }
+  // S2 steps + caption
+  if(inS(f,2)){
+    const st=SP.step, idx=f<st[2][0]?0:(f<st[3][0]?1:2), f0=[st[1][0],st[2][0],st[3][0]][idx];
+    [0,1,2].forEach(i=>{const p=$('p'+i);p.classList.toggle('on',i===idx);p.classList.toggle('done',i<idx);
+      let s=1; if(i===idx){const q=prog(f,f0,8); s=1+0.07*Math.sin(q*Math.PI);} p.style.transform=`scale(${s})`;});
+    const q=E.out3(prog(f,st[1][0],8)); setT($('steps'),(1-q)*-14,1,0.45+0.55*q);
+    const c=E.out3(prog(f,st[1][0]+2,10)); setT($('cap2'),(1-c)*22,1,0.3+0.7*c);
+  }
+  // S3 action pill (pulses on the hover beat and on the click)
+  if(inS(f,3)){ const s0=SP.scene[3][0]; const q=E.outBack(prog(f,s0,12)), o=0.4+0.6*clamp(prog(f,s0,6));
+    const pulse=1+0.04*Math.sin(prog(f,SP.hover[0],SP.hover[1]-SP.hover[0])*Math.PI)+0.05*Math.sin(prog(f,SP.clickF,8)*Math.PI);
+    setT($('act3'),(1-clamp(q))*18,(0.85+0.15*clamp(q,0,1.2))*pulse,o); }
+  // S4 result
+  if(inS(f,4)){ const s0=SP.scene[4][0]; const p=E.outBack(prog(f,s0,13)), o=0.55+0.45*clamp(prog(f,s0,4)); setT($('s4a'),0,0.6+0.4*p,o);
+    const q=E.out3(prog(f,s0+8,10)); setT($('s4b'),(1-q)*26,1,q); }
+  // S5 end card
+  if(inS(f,5)){ const s0=SP.scene[5][0]; const a=E.out3(prog(f,s0,9)); setT($('s5a'),(1-a)*28,1,0.5+0.5*a); const b=E.out3(prog(f,s0+2,9)); setT($('s5b'),(1-b)*28,1,0.5+0.5*b);
+    const c=E.out3(prog(f,s0+12,10)); setT($('s5c'),(1-c)*22,1,c); $('s5line').style.transform=`scaleX(${E.out3(prog(f,s0+14,14))})`; }
+  for(const R of SP.rings) ring(R,f);
+  for(const R of SP.ripples) ripple(R,f);
+  cursor(f);
+}
+window.renderAt=renderAt;
+(async()=>{
+  const ws=['500','600','700','800'];
+  await Promise.all(ws.flatMap(w=>[document.fonts.load(w+' 40px PromptX','กขคงจ'),document.fonts.load(w+' 40px PromptX','AaGg?!')]));
+  await document.fonts.ready; fit(); window.ready=true;
+})();
+</script></body></html>
