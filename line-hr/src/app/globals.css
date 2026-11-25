@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-line: #06c755;
+  --color-line-dark: #05a647;
+  --font-sans: system-ui, -apple-system, "Segoe UI", "Noto Sans Thai", "Sukhumvit Set", "Thonburi", "Leelawadee UI",
+    sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f4f6f8;
+  color: #1f2937;
+  -webkit-tap-highlight-color: transparent;
+}
